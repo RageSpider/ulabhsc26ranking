@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ULAB 26 - Design Rankings</title>
+    
+    <!-- FONTS -->
+    <link href="https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;700&display=swap" rel="stylesheet">
+    
+    <!-- LIBRARIES -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        bg: '#050505',
+                        card: '#111',
+                        border: '#222',
+                        accent: '#F0F0F0',
+                    },
+                    fontFamily: {
+                        display: ['Clash Display', 'sans-serif'],
+                        mono: ['Space Grotesk', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { background-color: #050505; color: #fff; font-family: 'Space Grotesk', sans-serif; }
+        
+        /* Glassmorphism */
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Voting Animation */
+        .vote-anim { animation: ping 0.5s cubic-bezier(0, 0, 0.2, 1); }
+        @keyframes ping { 75%, 100% { transform: scale(2); opacity: 0; } }
+
+        /* Loader */
+        .loader { border: 2px solid #333; border-top: 2px solid #fff; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Modal Transitions */
+        .modal-enter { opacity: 0; transform: scale(0.95); }
+        .modal-enter-active { opacity: 1; transform: scale(1); transition: all 0.3s ease; }
+        .modal-exit { opacity: 1; transform: scale(1); }
+        .modal-exit-active { opacity: 0; transform: scale(0.95); transition: all 0.2s ease; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- NAVBAR -->
+    <nav class="fixed top-0 w-full z-40 border-b border-border bg-bg/90 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex justify-between items-center">
+            <a href="index.html" class="font-display font-bold text-xl tracking-wider hover:text-gray-400 transition">HSC 26</a>
+            
+            <div id="auth-ui" class="flex items-center gap-4">
+                <!-- Injected via JS -->
+            </div>
+        </div>
+    </nav>
+
+    <!-- HEADER -->
+    <header class="pt-32 pb-16 text-center px-4">
+        <h1 class="text-4xl md:text-6xl font-display font-bold mb-4">THE LEADERBOARD</h1>
+        <p class="text-gray-400 max-w-lg mx-auto">Vote for the best interactive experience. Preview the designs, explore the worlds, and cast your choice.</p>
+    </header>
+
+    <!-- GRID -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 pb-20 w-full">
+        <div id="grid-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- CARDS INJECTED HERE -->
+            <div class="col-span-full text-center py-20 text-gray-500">Connecting to Database...</div>
+        </div>
+    </main>
+
+    <!-- PREVIEW MODAL (FULL SCREEN IFRAME) -->
+    <div id="preview-modal" class="fixed inset-0 z-50 hidden bg-black">
+        <iframe id="preview-frame" class="w-full h-full border-none opacity-0 transition-opacity duration-1000"></iframe>
+        
+        <!-- Modal Controls -->
+        <div class="absolute top-6 right-6 z-50 flex gap-4">
+            <button onclick="closePreview()" class="bg-black/80 hover:bg-white hover:text-black text-white border border-white/20 px-6 py-2 rounded-full backdrop-blur-md transition-all font-mono text-sm uppercase tracking-widest">
+                Close Preview
+            </button>
+        </div>
+    </div>
+
+    <!-- AUTH MODAL -->
+    <div id="auth-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/80 backdrop-blur-sm">
+        <div class="bg-[#0a0a0a] border border-gray-800 p-8 rounded-2xl w-full max-w-md relative shadow-2xl">
+            <button onclick="toggleAuthModal()" class="absolute top-4 right-4 text-gray-500 hover:text-white">✕</button>
+            
+            <h2 class="font-display text-2xl font-bold mb-1">Identify Yourself</h2>
+            <p class="text-gray-500 text-sm mb-6">Create an account to cast your vote.</p>
+
+            <form id="auth-form" class="flex flex-col gap-4">
+                <!-- Honeypot (Anti-Bot) -->
+                <input type="text" name="website_url" class="hidden" tabindex="-1" autocomplete="off">
+
+                <div>
+                    <label class="block text-xs uppercase tracking-widest text-gray-500 mb-1">Name</label>
+                    <input type="text" id="user-name" class="w-full bg-[#111] border border-gray-700 rounded p-3 text-white focus:border-white outline-none" placeholder="Your Name" required>
+                </div>
+                <div>
+                    <label class="block text-xs uppercase tracking-widest text-gray-500 mb-1">Email</label>
+                    <input type="email" id="user-email" class="w-full bg-[#111] border border-gray-700 rounded p-3 text-white focus:border-white outline-none" placeholder="student@example.com" required>
+                </div>
+                <div>
+                    <label class="block text-xs uppercase tracking-widest text-gray-500 mb-1">Password</label>
+                    <input type="password" id="user-pass" class="w-full bg-[#111] border border-gray-700 rounded p-3 text-white focus:border-white outline-none" placeholder="••••••••" required>
+                </div>
+
+                <div id="auth-error" class="text-red-500 text-xs hidden"></div>
+
+                <button type="submit" class="mt-2 bg-white text-black font-bold py-3 rounded hover:bg-gray-200 transition">
+                    Register & Login
+                </button>
+            </form>
+            <p class="text-xs text-gray-600 mt-4 text-center">Already have an account? Just use the same email/pass to log in.</p>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // --- CONFIG ---
+        // TODO: REPLACE WITH YOUR SUPABASE KEYS
+        const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+        const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY';
+        
+        // --- STATIC DATA FOR CARDS (Until DB is connected) ---
+        // Once connected, you can fetch this from DB, but hardcoded is faster for 3 fixed pages.
+        const PROJECTS = [
+            { 
+                id: 1, 
+                name: "The Deep", 
+                section: "Section A", 
+                author: "Tawsif & Co", 
+                file: "indexa.html", 
+                color: "text-blue-500",
+                desc: "A descent into the underwater catacombs of history."
+            },
+            { 
+                id: 2, 
+                name: "The Archive", 
+                section: "Section B", 
+                author: "Nabil", 
+                file: "indexb.html", 
+                color: "text-yellow-500",
+                desc: "A golden collection of memories stored in time."
+            },
+            { 
+                id: 3, 
+                name: "The Chronicle", 
+                section: "Section H", 
+                author: "Farhan", 
+                file: "indexh.html", 
+                color: "text-green-500",
+                desc: "A blooming garden of organic memories."
+            }
+        ];
+
+        // --- STATE ---
+        let supabase;
+        let currentUser = null;
+        let votes = { 1: 0, 2: 0, 3: 0 }; // Local cache
+
+        // --- INIT ---
+        async function init() {
+            try {
+                // Initialize Supabase
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                
+                // Check Session
+                const { data: { session } } = await supabase.auth.getSession();
+                currentUser = session?.user;
+                updateAuthUI();
+
+                // Listen for Auth Changes
+                supabase.auth.onAuthStateChange((_event, session) => {
+                    currentUser = session?.user;
+                    updateAuthUI();
+                });
+
+                // Fetch Votes
+                fetchVotes();
+
+                // Render Cards
+                renderCards();
+
+                // Realtime Listener
+                supabase.channel('public:designs')
+                    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'designs' }, payload => {
+                        updateVoteCount(payload.new.id, payload.new.votes);
+                    })
+                    .subscribe();
+
+            } catch (e) {
+                console.warn("Supabase not connected. Running in Offline Mode.");
+                renderCards(); // Still render UI
+            }
+        }
+
+        // --- RENDER ---
+        function renderCards() {
+            const container = document.getElementById('grid-container');
+            container.innerHTML = '';
+
+            PROJECTS.forEach(p => {
+                const card = document.createElement('div');
+                card.className = "glass rounded-xl overflow-hidden group hover:border-gray-600 transition-colors duration-300 flex flex-col";
+                
+                // Visual Placeholder (Replace simple div with screenshot <img> if you have them)
+                const initial = p.name.charAt(0);
+                
+                card.innerHTML = `
+                    <div class="h-48 bg-black/50 relative overflow-hidden group-hover:bg-black/30 transition-all cursor-pointer" onclick="openPreview('${p.file}')">
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <span class="font-display text-6xl opacity-20 group-hover:opacity-40 transition-opacity ${p.color}">${initial}</span>
+                        </div>
+                        <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                            <button class="bg-white/10 backdrop-blur border border-white/20 px-4 py-2 rounded-full text-xs font-mono uppercase tracking-widest hover:bg-white hover:text-black transition">
+                                👁️ Live Preview
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="p-6 flex flex-col flex-grow">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <h3 class="font-display font-bold text-2xl">${p.name}</h3>
+                                <span class="text-xs font-mono text-gray-500 uppercase tracking-widest">${p.section}</span>
+                            </div>
+                            <div class="text-right">
+                                <span id="votes-${p.id}" class="block font-display font-bold text-xl text-white">0</span>
+                                <span class="text-[10px] text-gray-600 uppercase">Votes</span>
+                            </div>
+                        </div>
+                        
+                        <p class="text-gray-400 text-sm mb-6 flex-grow leading-relaxed">${p.desc}</p>
+                        
+                        <div class="flex items-center justify-between border-t border-gray-800 pt-4 mt-auto">
+                            <span class="text-xs text-gray-600">By ${p.author}</span>
+                            <button onclick="handleVote(${p.id})" class="flex items-center gap-2 text-gray-400 hover:text-white transition group/btn">
+                                <span class="group-hover/btn:text-red-500 transition-colors">♥</span> Vote
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // --- PREVIEW LOGIC ---
+        function openPreview(file) {
+            const modal = document.getElementById('preview-modal');
+            const frame = document.getElementById('preview-frame');
+            
+            modal.classList.remove('hidden');
+            // Small delay to allow fade-in
+            setTimeout(() => {
+                frame.src = file; // Load the heavy WebGL file now
+                frame.onload = () => { frame.classList.remove('opacity-0'); };
+            }, 100);
+        }
+
+        function closePreview() {
+            const modal = document.getElementById('preview-modal');
+            const frame = document.getElementById('preview-frame');
+            
+            frame.classList.add('opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                frame.src = 'about:blank'; // Unload to save memory
+            }, 500);
+        }
+
+        // --- VOTING LOGIC ---
+        async function fetchVotes() {
+            if(!supabase) return;
+            const { data, error } = await supabase.from('designs').select('*');
+            if(data) {
+                data.forEach(row => updateVoteCount(row.id, row.votes));
+            }
+        }
+
+        function updateVoteCount(id, count) {
+            const el = document.getElementById(`votes-${id}`);
+            if(el) {
+                // Animate change
+                if(el.innerText != count) {
+                    el.classList.add('scale-150', 'text-green-400');
+                    setTimeout(() => el.classList.remove('scale-150', 'text-green-400'), 300);
+                }
+                el.innerText = count;
+            }
+        }
+
+        async function handleVote(id) {
+            if (!currentUser) {
+                toggleAuthModal();
+                return;
+            }
+
+            // Button Feedback
+            const btn = event.currentTarget;
+            btn.innerHTML = `<div class="loader"></div>`;
+
+            // Call RPC (Atomic Increment)
+            const { error } = await supabase.rpc('vote_for_design', { design_id: id });
+            
+            if (error) {
+                alert("Error voting. Check console.");
+                console.error(error);
+                btn.innerHTML = `<span class="text-red-500">Error</span>`;
+            } else {
+                btn.innerHTML = `<span class="text-green-500">Voted!</span>`;
+                // Refresh list
+                fetchVotes();
+            }
+            
+            setTimeout(() => {
+                btn.innerHTML = `<span class="group-hover/btn:text-red-500 transition-colors">♥</span> Vote`;
+            }, 2000);
+        }
+
+        // --- AUTH LOGIC ---
+        function updateAuthUI() {
+            const ui = document.getElementById('auth-ui');
+            if (currentUser) {
+                ui.innerHTML = `
+                    <div class="text-right hidden md:block">
+                        <div class="text-xs text-gray-500 uppercase">Logged in as</div>
+                        <div class="font-bold text-sm">${currentUser.user_metadata.full_name || 'User'}</div>
+                    </div>
+                    <button onclick="logout()" class="text-xs border border-gray-700 px-3 py-1 rounded hover:bg-white hover:text-black transition">Logout</button>
+                `;
+            } else {
+                ui.innerHTML = `
+                    <button onclick="toggleAuthModal()" class="bg-white text-black px-5 py-2 rounded font-bold text-sm hover:bg-gray-200 transition">Login</button>
+                `;
+            }
+        }
+
+        function toggleAuthModal() {
+            const modal = document.getElementById('auth-modal');
+            modal.classList.toggle('hidden');
+        }
+
+        async function logout() {
+            await supabase.auth.signOut();
+            window.location.reload();
+        }
+
+        // --- SIGN UP / SIGN IN HANDLER ---
+        document.getElementById('auth-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('user-email').value;
+            const pass = document.getElementById('user-pass').value;
+            const name = document.getElementById('user-name').value;
+            const honeypot = document.getElementsByName('website_url')[0].value;
+            const errorDiv = document.getElementById('auth-error');
+
+            // 1. Bot Check
+            if(honeypot) { console.log("Bot detected"); return; }
+
+            // 2. Email Regex Check
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                errorDiv.innerText = "Please enter a valid email address.";
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+
+            errorDiv.classList.add('hidden');
+            
+            // 3. Try Login First
+            let { data, error } = await supabase.auth.signInWithPassword({ email, password: pass });
+
+            if (error) {
+                // If login fails, try Registering
+                const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+                    email,
+                    password: pass,
+                    options: { data: { full_name: name } }
+                });
+
+                if (signUpError) {
+                    errorDiv.innerText = signUpError.message;
+                    errorDiv.classList.remove('hidden');
+                    return;
+                }
+            }
+
+            // Success
+            toggleAuthModal();
+        });
+
+        // Start
+        window.addEventListener('DOMContentLoaded', init);
+
+    </script>
+</body>
+</html>

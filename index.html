@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ULAB HSC 26 | THE CONVERGENCE</title>
+    
+    <!-- FONTS -->
+    <link href="https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Space+Grotesk:wght@300;400&display=swap" rel="stylesheet">
+
+    <!-- LIBRARIES -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        void: '#050505',
+                        starlight: '#F0F0F0',
+                        accent: '#d4af37', /* Gold from Archive */
+                        deep: '#3b82f6',   /* Blue from Deep */
+                        nature: '#74c69d', /* Green from Chronicle */
+                    },
+                    fontFamily: {
+                        display: ['Clash Display', 'sans-serif'],
+                        serif: ['Cinzel', 'serif'],
+                        mono: ['Space Grotesk', 'monospace'],
+                    },
+                    letterSpacing: {
+                        'ultra': '0.5em',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            margin: 0;
+            background-color: #050505;
+            color: #F0F0F0;
+            overflow: hidden; /* No scroll on landing */
+            font-family: 'Clash Display', sans-serif;
+        }
+
+        /* --- UI ELEMENTS --- */
+        #canvas-container { position: fixed; inset: 0; z-index: 1; }
+        .ui-layer { position: relative; z-index: 10; pointer-events: none; }
+        .interactive { pointer-events: auto; }
+
+        .noise-overlay {
+            position: fixed; inset: 0; z-index: 5; opacity: 0.05; pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        .vignette {
+            position: fixed; inset: 0; z-index: 4; pointer-events: none;
+            background: radial-gradient(circle at center, transparent 30%, #050505 100%);
+        }
+
+        /* Glitch Text Effect */
+        .glitch-wrapper { position: relative; display: inline-block; }
+        .glitch-wrapper::before, .glitch-wrapper::after {
+            content: attr(data-text); position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: #050505; opacity: 0.8;
+        }
+        .glitch-wrapper::before { color: #3b82f6; z-index: -1; animation: glitch-anim-1 2.5s infinite linear alternate-reverse; }
+        .glitch-wrapper::after { color: #d4af37; z-index: -2; animation: glitch-anim-2 3s infinite linear alternate-reverse; }
+
+        @keyframes glitch-anim-1 {
+            0% { clip-path: inset(20% 0 80% 0); transform: translate(-2px, 0); }
+            100% { clip-path: inset(30% 0 30% 0); transform: translate(2px, 0); }
+        }
+        @keyframes glitch-anim-2 {
+            0% { clip-path: inset(10% 0 60% 0); transform: translate(2px, 0); }
+            100% { clip-path: inset(30% 0 10% 0); transform: translate(-2px, 0); }
+        }
+
+        .enter-btn:hover .btn-fill { width: 100%; }
+        .enter-btn:hover .btn-text { color: #050505; }
+    </style>
+</head>
+<body>
+
+    <div id="canvas-container"></div>
+    <div class="noise-overlay"></div>
+    <div class="vignette"></div>
+
+    <main class="ui-layer h-screen w-full flex flex-col justify-between p-8 md:p-12 box-border">
+        <header class="flex justify-between items-start opacity-0 reveal-item">
+            <div class="flex flex-col gap-1">
+                <span class="font-mono text-xs text-white/40 tracking-ultra uppercase">System Ready</span>
+                <span class="font-display font-bold text-lg tracking-widest">HSC 26</span>
+            </div>
+            <div class="hidden md:flex gap-8 text-[10px] font-mono text-white/30 uppercase tracking-widest">
+                <span>Core: Stable</span>
+                <span>Vis: High</span>
+                <span>Status: Voting Open</span>
+            </div>
+        </header>
+
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center w-full z-20">
+            <div class="mb-4 overflow-hidden">
+                <p class="font-mono text-xs md:text-sm text-accent tracking-[0.5em] uppercase opacity-0 reveal-item translate-y-4">
+                    The Trilogy Ends Here
+                </p>
+            </div>
+            
+            <h1 class="text-5xl md:text-8xl lg:text-9xl font-display font-bold leading-none tracking-tighter opacity-0 reveal-item scale-95 origin-center">
+                <span class="glitch-wrapper" data-text="DESIGN">DESIGN</span><br>
+                <span class="text-white/20">WARS</span>
+            </h1>
+
+            <div class="mt-12 flex justify-center opacity-0 reveal-item">
+                <button onclick="enterSite()" class="interactive enter-btn group relative px-8 py-4 bg-transparent border border-white/20 overflow-hidden transition-all duration-300 hover:border-white/80 hover:scale-105">
+                    <div class="btn-fill absolute inset-0 bg-white w-0 transition-all duration-300 ease-out"></div>
+                    <span class="btn-text relative font-mono text-xs tracking-widest uppercase z-10 transition-colors duration-300 flex items-center gap-4">
+                        Initialize Sequence <span class="text-lg">→</span>
+                    </span>
+                </button>
+            </div>
+        </div>
+
+        <footer class="flex justify-between items-end opacity-0 reveal-item">
+            <div class="flex flex-col gap-2">
+                <div class="flex items-center gap-2">
+                    <div class="w-2 h-2 rounded-full bg-deep shadow-[0_0_10px_#3b82f6]"></div>
+                    <span class="font-display text-sm text-white/60">Sec A</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="w-2 h-2 rounded-full bg-accent shadow-[0_0_10px_#d4af37]"></div>
+                    <span class="font-display text-sm text-white/60">Sec B</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="w-2 h-2 rounded-full bg-nature shadow-[0_0_10px_#74c69d]"></div>
+                    <span class="font-display text-sm text-white/60">Sec H</span>
+                </div>
+            </div>
+
+            <div class="text-right">
+                <p class="font-serif italic text-white/30 text-sm">"Three worlds. One winner."</p>
+                <p class="font-mono text-[10px] text-white/20 uppercase mt-2 tracking-widest">ULAB HSC 26</p>
+            </div>
+        </footer>
+    </main>
+
+    <div id="shutter" class="fixed inset-0 bg-void z-50 flex items-center justify-center pointer-events-none">
+        <div class="w-[1px] h-0 bg-white/20 transition-all duration-[1.5s] ease-in-out" id="shutter-line"></div>
+    </div>
+
+    <!-- JS LOGIC -->
+    <script>
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x050505, 0.002);
+
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 5;
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        container.appendChild(renderer.domElement);
+
+        const geometry = new THREE.BufferGeometry();
+        const count = 4000;
+        
+        const positions = new Float32Array(count * 3);
+        const colors = new Float32Array(count * 3);
+        const sizes = new Float32Array(count);
+        const randomness = new Float32Array(count * 3);
+
+        const colorPalette = [
+            new THREE.Color('#3b82f6'), 
+            new THREE.Color('#d4af37'), 
+            new THREE.Color('#74c69d'), 
+            new THREE.Color('#ffffff')  
+        ];
+
+        for(let i = 0; i < count; i++) {
+            const i3 = i * 3;
+            const radius = 2 + Math.random() * 2;
+            const theta = Math.random() * Math.PI * 2;
+            const phi = Math.acos((Math.random() * 2) - 1);
+
+            positions[i3] = radius * Math.sin(phi) * Math.cos(theta);
+            positions[i3+1] = radius * Math.sin(phi) * Math.sin(theta);
+            positions[i3+2] = radius * Math.cos(phi);
+
+            randomness[i3] = (Math.random() - 0.5);
+            randomness[i3+1] = (Math.random() - 0.5);
+            randomness[i3+2] = (Math.random() - 0.5);
+
+            const color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
+            colors[i3] = color.r; colors[i3+1] = color.g; colors[i3+2] = color.b;
+            sizes[i] = Math.random();
+        }
+
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+        geometry.setAttribute('aRandomness', new THREE.BufferAttribute(randomness, 3));
+
+        const material = new THREE.ShaderMaterial({
+            depthWrite: false, blending: THREE.AdditiveBlending, vertexColors: true,
+            uniforms: { uTime: { value: 0 }, uPixelRatio: { value: Math.min(window.devicePixelRatio, 2) } },
+            vertexShader: `
+                uniform float uTime; uniform float uPixelRatio; attribute float size; attribute vec3 aRandomness; varying vec3 vColor;
+                void main() {
+                    vec3 modelPosition = position;
+                    float angle = atan(modelPosition.x, modelPosition.z);
+                    float distanceToCenter = length(modelPosition.xz);
+                    float angleOffset = (1.0 / distanceToCenter) * uTime * 0.2;
+                    angle += angleOffset;
+                    modelPosition.x = cos(angle) * distanceToCenter;
+                    modelPosition.z = sin(angle) * distanceToCenter;
+                    modelPosition += aRandomness * sin(uTime + length(modelPosition)) * 0.1;
+                    vec4 viewPosition = viewMatrix * modelMatrix * vec4(modelPosition, 1.0);
+                    gl_Position = projectionMatrix * viewPosition;
+                    gl_PointSize = size * uPixelRatio * (100.0 / -viewPosition.z);
+                    vColor = color;
+                }
+            `,
+            fragmentShader: `
+                varying vec3 vColor;
+                void main() {
+                    float dist = distance(gl_PointCoord, vec2(0.5));
+                    float strength = 0.05 / dist - 0.1;
+                    gl_FragColor = vec4(vColor, strength);
+                }
+            `
+        });
+
+        const particles = new THREE.Points(geometry, material);
+        scene.add(particles);
+
+        let mouseX = 0, mouseY = 0;
+        window.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX / window.innerWidth - 0.5;
+            mouseY = e.clientY / window.innerHeight - 0.5;
+        });
+
+        const clock = new THREE.Clock();
+        const tick = () => {
+            const elapsedTime = clock.getElapsedTime();
+            material.uniforms.uTime.value = elapsedTime;
+            particles.rotation.y = elapsedTime * 0.1;
+            camera.position.x += (mouseX * 2 - camera.position.x) * 0.05;
+            camera.position.y += (-mouseY * 2 - camera.position.y) * 0.05;
+            camera.lookAt(new THREE.Vector3(0, 0, 0));
+            renderer.render(scene, camera);
+            window.requestAnimationFrame(tick);
+        }
+        tick();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            material.uniforms.uPixelRatio.value = Math.min(window.devicePixelRatio, 2);
+        });
+
+        window.addEventListener('load', () => {
+            const shutterLine = document.getElementById('shutter-line');
+            const shutter = document.getElementById('shutter');
+            shutterLine.style.height = '100vh';
+            setTimeout(() => {
+                shutterLine.style.width = '100vw'; shutterLine.style.opacity = 0;
+                gsap.to(shutter, { opacity: 0, duration: 1, delay: 0.5, onComplete: () => shutter.style.display = 'none' });
+                gsap.to('.reveal-item', { opacity: 1, y: 0, scale: 1, duration: 1.5, stagger: 0.2, delay: 0.8, ease: "power3.out" });
+            }, 1000);
+        });
+
+        function enterSite() {
+            gsap.to(camera.position, { z: 0.5, duration: 1.5, ease: "power2.in" });
+            gsap.to('.ui-layer', { opacity: 0, duration: 0.5 });
+            setTimeout(() => { window.location.href = 'ranking.html'; }, 1500);
+        }
+    </script>
+</body>
+</html>
