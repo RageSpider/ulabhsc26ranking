@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>119 | Amrin Hasan</title>
+
+    <!-- FONTS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;600;700&family=Quicksand:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <!-- LIBRARIES -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'sakura-pink': '#FFB7C5',
+                        'sakura-light': '#FFF0F5',
+                        'sakura-dark': '#FF9EAE',
+                        'bark': '#5D4037',
+                    },
+                    fontFamily: {
+                        'hand': ['Dancing Script', 'cursive'],
+                        'body': ['Quicksand', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background: linear-gradient(to bottom, #FFF5F7, #FFE4E1);
+            color: #5D4037;
+            font-family: 'Quicksand', sans-serif;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .petal {
+            position: fixed;
+            background: #FFC0CB;
+            border-radius: 100% 0 100% 0;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .dream-container {
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 20px 50px -10px rgba(255, 183, 197, 0.4);
+            border-radius: 40px;
+        }
+
+        .image-frame {
+            position: relative;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 20px;
+            border: 1px solid white;
+            box-shadow: 0 10px 30px rgba(255, 183, 197, 0.3);
+            transform: rotate(-2deg);
+            transition: transform 0.5s ease;
+        }
+        .image-frame:hover {
+            transform: rotate(0deg) scale(1.02);
+        }
+        .image-frame img {
+            border-radius: 12px;
+            width: 100%;
+            display: block;
+        }
+
+        .btn-glow {
+            background: linear-gradient(45deg, #FFB7C5, #FF9EAE);
+            color: white;
+            box-shadow: 0 5px 20px rgba(255, 158, 174, 0.5);
+            transition: all 0.3s ease;
+        }
+        .btn-glow:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255, 158, 174, 0.7);
+        }
+
+        /* Voting Slider specific to this page */
+        .vote-panel {
+            background: #FFF0F5;
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid #FFB7C5;
+        }
+        input[type=range] {
+            -webkit-appearance: none; width: 100%; background: transparent;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; height: 20px; width: 20px; 
+            border-radius: 50%; background: #5D4037; cursor: pointer; 
+            margin-top: -8px; border: 2px solid white;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%; height: 4px; cursor: pointer; 
+            background: #FFB7C5; border-radius: 2px;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center p-4 md:p-8">
+
+    <!-- PETALS -->
+    <div id="petals-container"></div>
+
+    <!-- NAV -->
+    <nav class="fixed top-0 left-0 w-full p-6 z-50">
+        <a href="../ranking.html" class="flex items-center gap-2 group">
+            <div class="w-10 h-10 rounded-full bg-white/50 flex items-center justify-center group-hover:bg-white transition-colors">
+                <span class="text-bark">←</span>
+            </div>
+            <span class="font-bold text-xs uppercase tracking-widest text-bark/60 group-hover:text-bark">Back to Ranking</span>
+        </a>
+    </nav>
+
+    <!-- CONTENT CARD -->
+    <main class="dream-container w-full max-w-5xl flex flex-col md:flex-row overflow-hidden relative z-10 opacity-0 mt-12 md:mt-0" id="main-card">
+        
+        <!-- LEFT: IMAGE -->
+        <div class="w-full md:w-[45%] bg-sakura-light/30 p-8 md:p-12 flex items-center justify-center relative">
+            <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20"></div>
+            
+            <div class="image-frame w-full max-w-xs">
+                <!-- Path adjusted for local folder structure -->
+                <img src="../images/119.jpeg" alt="Amrin Hasan">
+            </div>
+
+            <!-- Floating Decoration -->
+            <div class="absolute top-10 right-10 text-4xl animate-bounce" style="animation-duration: 3s">🌸</div>
+            <div class="absolute bottom-10 left-10 text-3xl animate-bounce" style="animation-duration: 4s; animation-delay: 1s">🌸</div>
+        </div>
+
+        <!-- RIGHT: INFO & ACTIONS -->
+        <div class="w-full md:w-[55%] p-8 md:p-12 flex flex-col justify-center text-center md:text-left">
+            
+            <!-- INFO -->
+            <div class="mb-8">
+                <div class="flex items-center justify-center md:justify-start gap-3 mb-2">
+                    <span class="px-3 py-1 bg-white rounded-full text-[10px] font-bold uppercase tracking-widest text-bark shadow-sm">Section B</span>
+                    <span class="px-3 py-1 bg-white rounded-full text-[10px] font-bold uppercase tracking-widest text-bark shadow-sm">Roll 119</span>
+                </div>
+                
+                <h1 class="font-hand text-6xl md:text-7xl text-bark mb-1">Amrin Hasan</h1>
+                <p class="font-body text-xl text-sakura-dark font-semibold italic">"The Smile Collector"</p>
+                
+                <div class="my-6 w-full h-[1px] bg-gradient-to-r from-sakura-pink/0 via-sakura-pink to-sakura-pink/0"></div>
+                
+                <div class="space-y-2">
+                    <p class="text-bark/60 text-sm font-bold uppercase tracking-widest">Selected Theme</p>
+                    <p class="font-hand text-4xl text-sakura-dark">Sakura Dreams</p>
+                </div>
+            </div>
+
+            <!-- ACTIONS -->
+            <div class="space-y-6">
+                <!-- External Link -->
+                <a href="https://ulabhsc26bsec.netlify.app/students/119.html" target="_blank" class="block w-full py-4 rounded-xl btn-glow text-center font-bold text-lg uppercase tracking-widest relative overflow-hidden group">
+                    <span class="relative z-10 flex items-center justify-center gap-2">
+                        Visit Original Masterpiece 
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                    </span>
+                    <div class="absolute inset-0 bg-white/20 transform -translate-x-full group-hover:translate-x-0 transition-transform duration-500"></div>
+                </a>
+
+                <!-- Inline Voting -->
+                <div class="vote-panel">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="font-bold text-bark text-xs uppercase tracking-widest">Rate this Profile</span>
+                        <span id="score-val" class="font-hand text-2xl text-bark">50</span>
+                    </div>
+                    <input type="range" id="inline-slider" min="1" max="100" value="50" oninput="document.getElementById('score-val').innerText = this.value">
+                    <button onclick="submitInlineVote()" id="inline-vote-btn" class="mt-4 w-full py-2 bg-white border border-sakura-pink text-sakura-dark rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-sakura-pink hover:text-white transition-colors">
+                        Submit Score
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        // --- ANIMATIONS ---
+        // 1. Petals
+        const container = document.getElementById('petals-container');
+        for(let i=0; i<15; i++) {
+            const petal = document.createElement('div');
+            petal.className = 'petal';
+            const size = Math.random() * 10 + 5;
+            petal.style.width = `${size}px`; petal.style.height = `${size}px`;
+            petal.style.left = `${Math.random() * 100}vw`; petal.style.top = `${Math.random() * 100}vh`;
+            petal.style.background = ['#FFB7C5', '#FFC0CB'][Math.floor(Math.random()*2)];
+            container.appendChild(petal);
+            
+            gsap.to(petal, {
+                y: '+=100', x: '+=50', rotation: '+=360',
+                duration: Math.random() * 10 + 10, repeat: -1, yoyo: true, ease: "sine.inOut"
+            });
+        }
+
+        // 2. Entrance
+        gsap.to("#main-card", { opacity: 1, y: 0, duration: 1, delay: 0.2, ease: "power2.out" });
+        gsap.from(".image-frame", { scale: 0.8, opacity: 0, duration: 1, delay: 0.5, ease: "back.out(1.7)" });
+
+        // --- SUPABASE LOGIC (Simplified) ---
+        const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+        const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        // Hardcoded ID logic for demo (In production, this would be dynamic)
+        // We need to fetch the ID for Roll 119 Section B
+        let entryId = null;
+
+        async function init() {
+            const { data } = await supabase.from('entries').select('id').eq('roll', '119').eq('section', 'Section B').single();
+            if(data) entryId = data.id;
+        }
+
+        async function submitInlineVote() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if(!session) {
+                alert("Please log in at the main ranking page first!");
+                return;
+            }
+            
+            if(!entryId) { alert("Entry not found in database."); return; }
+
+            const score = document.getElementById('inline-slider').value;
+            const btn = document.getElementById('inline-vote-btn');
+            btn.innerText = "Saving...";
+            
+            const { error } = await supabase.from('user_votes').insert({
+                user_id: session.user.id,
+                entry_id: entryId,
+                score: parseInt(score)
+            });
+
+            if(error) alert(error.message);
+            else {
+                btn.innerText = "Vote Saved!";
+                btn.classList.add('bg-green-100', 'text-green-600', 'border-green-200');
+            }
+        }
+        
+        init();
+    </script>
+</body>
+</html>
