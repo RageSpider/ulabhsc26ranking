@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEXUS | Prime Admin Console v2.0</title>
+    <title>NEXUS | Prime Admin Console v2.1</title>
     
     <!-- FONTS & ICONS -->
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -38,6 +38,13 @@
                     },
                     animation: {
                         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'marquee': 'marquee 30s linear infinite',
+                    },
+                    keyframes: {
+                        marquee: {
+                            '0%': { transform: 'translateX(100%)' },
+                            '100%': { transform: 'translateX(-100%)' },
+                        }
                     }
                 }
             }
@@ -65,9 +72,7 @@
         @keyframes load { 0% { left: -30%; } 100% { left: 100%; } }
 
         .metric-card:hover { border-color: #6366F1; transform: translateY(-1px); transition: all 0.2s; }
-        
-        /* Chart Containers */
-        .chart-container { position: relative; height: 100%; width: 100%; }
+        .shortcut-key { background: #2A2A2A; padding: 2px 6px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #9CA3AF; border: 1px solid #3F3F46; }
     </style>
 </head>
 <body class="h-screen flex flex-col selection:bg-primary selection:text-white">
@@ -92,6 +97,22 @@
         </div>
     </div>
 
+    <!-- === COMPARE MODAL === -->
+    <div id="compare-modal" class="fixed inset-0 z-[90] bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="w-full max-w-5xl bg-surface border border-border rounded-xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="p-4 border-b border-border flex justify-between items-center bg-surfaceHighlight">
+                <h3 class="text-sm font-bold text-white flex items-center gap-2"><i data-lucide="scale" class="w-4 h-4 text-accent"></i> Entity Comparison</h3>
+                <button onclick="toggleCompareMode(false)" class="text-muted hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div class="flex-1 overflow-auto p-6 grid grid-cols-2 gap-8 relative" id="compare-content">
+                <!-- JS Injected -->
+                <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                     <div class="w-12 h-12 rounded-full bg-black border border-border flex items-center justify-center text-white font-bold text-xl z-10 shadow-xl">VS</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- === APP SHELL === -->
     <div class="flex h-full relative opacity-0 transition-opacity duration-500" id="app-shell">
         
@@ -103,25 +124,29 @@
             <!-- Brand -->
             <div class="h-16 flex items-center px-6 border-b border-border gap-3">
                 <div class="w-6 h-6 bg-gradient-to-br from-primary to-accent rounded flex items-center justify-center text-white text-[10px] font-bold">NX</div>
-                <span class="font-bold tracking-tight text-gray-200 text-sm">PRIME ADMIN <span class="text-[9px] text-primary bg-primaryDim px-1.5 py-0.5 rounded ml-2">v2.0</span></span>
+                <span class="font-bold tracking-tight text-gray-200 text-sm">PRIME ADMIN <span class="text-[9px] text-primary bg-primaryDim px-1.5 py-0.5 rounded ml-2">v2.1</span></span>
             </div>
 
             <!-- Nav -->
             <nav class="p-4 space-y-1 flex-1 overflow-y-auto">
                 <div class="text-[10px] uppercase font-bold text-muted tracking-wider mb-2 px-2 mt-2">Overview</div>
-                <button onclick="switchView('dashboard')" id="nav-dashboard" class="nav-item w-full text-left px-3 py-2.5 rounded-lg text-xs font-medium flex items-center gap-3 text-muted hover:text-white hover:bg-white/5 transition-all">
-                    <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard
+                <button onclick="switchView('dashboard')" id="nav-dashboard" class="nav-item w-full text-left px-3 py-2.5 rounded-lg text-xs font-medium flex items-center justify-between text-muted hover:text-white hover:bg-white/5 transition-all">
+                    <div class="flex items-center gap-3"><i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard</div>
+                    <span class="shortcut-key">D</span>
                 </button>
 
                 <div class="text-[10px] uppercase font-bold text-muted tracking-wider mb-2 px-2 mt-6">Data Streams</div>
-                <button onclick="switchView('feed')" id="nav-feed" class="nav-item w-full text-left px-3 py-2.5 rounded-lg text-xs font-medium flex items-center gap-3 text-muted hover:text-white hover:bg-white/5 transition-all">
-                    <i data-lucide="activity" class="w-4 h-4"></i> Live Transactions
+                <button onclick="switchView('feed')" id="nav-feed" class="nav-item w-full text-left px-3 py-2.5 rounded-lg text-xs font-medium flex items-center justify-between text-muted hover:text-white hover:bg-white/5 transition-all">
+                    <div class="flex items-center gap-3"><i data-lucide="activity" class="w-4 h-4"></i> Live Transactions</div>
+                    <span class="shortcut-key">F</span>
                 </button>
-                <button onclick="switchView('voters')" id="nav-voters" class="nav-item w-full text-left px-3 py-2.5 rounded-lg text-xs font-medium flex items-center gap-3 text-muted hover:text-white hover:bg-white/5 transition-all">
-                    <i data-lucide="fingerprint" class="w-4 h-4"></i> Voter Database
+                <button onclick="switchView('voters')" id="nav-voters" class="nav-item w-full text-left px-3 py-2.5 rounded-lg text-xs font-medium flex items-center justify-between text-muted hover:text-white hover:bg-white/5 transition-all">
+                    <div class="flex items-center gap-3"><i data-lucide="fingerprint" class="w-4 h-4"></i> Voter Database</div>
+                    <span class="shortcut-key">V</span>
                 </button>
-                <button onclick="switchView('candidates')" id="nav-candidates" class="nav-item w-full text-left px-3 py-2.5 rounded-lg text-xs font-medium flex items-center gap-3 text-muted hover:text-white hover:bg-white/5 transition-all">
-                    <i data-lucide="users" class="w-4 h-4"></i> Entity Inspector
+                <button onclick="switchView('candidates')" id="nav-candidates" class="nav-item w-full text-left px-3 py-2.5 rounded-lg text-xs font-medium flex items-center justify-between text-muted hover:text-white hover:bg-white/5 transition-all">
+                    <div class="flex items-center gap-3"><i data-lucide="users" class="w-4 h-4"></i> Entity Inspector</div>
+                    <span class="shortcut-key">C</span>
                 </button>
             </nav>
 
@@ -144,14 +169,22 @@
         <main class="flex-1 flex flex-col bg-bg relative overflow-hidden">
             <!-- Header -->
             <header class="h-16 border-b border-border bg-surface/50 backdrop-blur flex items-center justify-between px-6 shrink-0 z-30">
-                <h2 id="page-title" class="text-sm font-bold text-white flex items-center gap-2">Dashboard</h2>
-                <div class="flex gap-3">
+                <div class="flex-1 flex items-center overflow-hidden mr-4">
+                    <div class="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20 shrink-0 mr-3">LIVE</div>
+                    <div class="flex-1 overflow-hidden relative h-5">
+                        <div id="live-ticker" class="absolute whitespace-nowrap text-xs text-muted font-mono flex items-center gap-8">
+                            <!-- JS Injected Ticker Items -->
+                            <span>Waiting for stream...</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex gap-3 shrink-0">
                     <div class="relative group">
                         <i data-lucide="search" class="w-3.5 h-3.5 absolute left-3 top-2.5 text-muted group-hover:text-white transition-colors"></i>
-                        <input type="text" id="global-search" placeholder="Search ID, email, name..." 
-                            class="w-64 bg-surfaceHighlight border border-border rounded-lg pl-9 pr-3 py-2 text-xs text-white focus:border-primary focus:outline-none transition-all placeholder:text-muted">
+                        <input type="text" id="global-search" placeholder="Global Search (G)" 
+                            class="w-56 bg-surfaceHighlight border border-border rounded-lg pl-9 pr-3 py-2 text-xs text-white focus:border-primary focus:outline-none transition-all placeholder:text-muted">
                     </div>
-                    <button onclick="refreshData()" class="p-2 text-muted hover:text-white bg-surfaceHighlight border border-border rounded-lg transition-colors hover:border-white/20" title="Sync Data">
+                    <button onclick="refreshData()" class="p-2 text-muted hover:text-white bg-surfaceHighlight border border-border rounded-lg transition-colors hover:border-white/20" title="Sync Data (R)">
                         <i data-lucide="refresh-cw" class="w-4 h-4"></i>
                     </button>
                     <button onclick="exportCSV()" class="flex items-center gap-2 px-3 py-2 bg-white text-black font-bold text-xs rounded-lg hover:bg-gray-200 transition-colors">
@@ -180,7 +213,7 @@
                             <div>
                                 <div class="text-3xl font-bold text-white font-mono" id="d-total-votes">--</div>
                                 <div class="text-[10px] text-success mt-1 flex items-center gap-1" id="d-total-growth">
-                                    Today's Activity
+                                    System Active
                                 </div>
                             </div>
                         </div>
@@ -224,17 +257,6 @@
                             <div class="flex-1 min-h-0 relative">
                                 <canvas id="chart-distribution"></canvas>
                             </div>
-                        </div>
-                    </div>
-
-                    <!-- Recent Activity -->
-                    <div class="glass-panel rounded-xl overflow-hidden">
-                        <div class="px-5 py-4 border-b border-border bg-white/5 flex justify-between items-center">
-                            <h3 class="font-bold text-xs text-white">Recent Transactions</h3>
-                            <button onclick="switchView('feed')" class="text-[10px] text-primary hover:text-white transition-colors">View All</button>
-                        </div>
-                        <div id="dashboard-feed-preview" class="divide-y divide-border">
-                            <!-- JS Injected -->
                         </div>
                     </div>
                 </div>
@@ -306,7 +328,7 @@
                                             </div>
                                         </div>
                                         <div class="text-right">
-                                            <div class="text-[10px] font-bold uppercase tracking-wider text-muted mb-1">Integrity Analysis</div>
+                                            <div class="text-[10px] font-bold uppercase tracking-wider text-muted mb-1">Integrity Status</div>
                                             <div id="vd-integrity-badge" class="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-green-500/10 text-green-500 border border-green-500/20 text-[10px] font-bold">
                                                 GOOD STANDING
                                             </div>
@@ -325,12 +347,12 @@
                                         <div class="text-[9px] text-muted uppercase tracking-wider">Avg Score</div>
                                     </div>
                                     <div class="p-3 text-center">
-                                        <div class="text-xl font-bold text-white font-mono" id="vd-high">0</div>
-                                        <div class="text-[9px] text-muted uppercase tracking-wider">Highest</div>
+                                        <div class="text-xl font-bold text-white font-mono" id="vd-velocity">0s</div>
+                                        <div class="text-[9px] text-muted uppercase tracking-wider">Avg Time/Vote</div>
                                     </div>
                                     <div class="p-3 text-center">
-                                        <div class="text-xl font-bold text-white font-mono" id="vd-low">0</div>
-                                        <div class="text-[9px] text-muted uppercase tracking-wider">Lowest</div>
+                                        <div class="text-xl font-bold text-white font-mono" id="vd-variance">0</div>
+                                        <div class="text-[9px] text-muted uppercase tracking-wider">Variance</div>
                                     </div>
                                 </div>
 
@@ -353,6 +375,9 @@
                 <div id="view-candidates" class="view-section hidden space-y-6">
                     <div class="flex justify-between items-center">
                          <p class="text-xs text-muted">Analysis of vote distribution and controversy.</p>
+                         <button onclick="enableCompareMode()" id="compare-trigger-btn" class="px-3 py-1.5 bg-accent/10 border border-accent/20 text-accent rounded text-[10px] font-bold hover:bg-accent/20 transition-all flex items-center gap-2">
+                             <i data-lucide="scale" class="w-3 h-3"></i> COMPARE MODE
+                         </button>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" id="candidates-grid">
                         <!-- JS Content -->
@@ -368,7 +393,6 @@
         // --- CONFIGURATION ---
         const CONFIG = {
             supabaseUrl: 'https://puguoqviaogqcsjrdkbk.supabase.co',
-            // Default key (anon) - replaced by login process usually, but needed for initial check
             supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB1Z3VvcXZpYW9ncWNzanJka2JrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcxMjQ4NTgsImV4cCI6MjA4MjcwMDg1OH0.D7W_uNWY1FpjKtPh7CkBOQNEhyQnYIcZIsFa1LhouPw'
         };
 
@@ -379,26 +403,45 @@
             user: null,
             entries: [], // Candidates
             votes: [],   // Vote records
-            usersMap: {}, // Cache of user details { uid: { display_name, email, ... } }
+            usersMap: {}, // Cache of user details
             charts: { volume: null, distribution: null },
             isLoading: false,
-            sortDir: 'desc'
+            sortDir: 'desc',
+            compareMode: false,
+            compareSelection: []
         };
 
         // --- INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', async () => {
             lucide.createIcons();
             
-            // 1. Session Check
+            // Session Check
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (session) {
                 initApp(session.user);
             } else {
-                // Show Login
                 document.getElementById('auth-overlay').classList.remove('hidden');
             }
 
-            // 2. Global Event Listeners
+            // Keyboard Shortcuts
+            document.addEventListener('keydown', (e) => {
+                // Ignore if typing in an input
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+                switch(e.key.toLowerCase()) {
+                    case 'd': switchView('dashboard'); break;
+                    case 'f': switchView('feed'); break;
+                    case 'v': switchView('voters'); break;
+                    case 'c': switchView('candidates'); break;
+                    case 'r': refreshData(); break;
+                    case 'g': 
+                        e.preventDefault();
+                        document.getElementById('global-search').focus(); 
+                        break;
+                }
+            });
+
+            // Input Listeners
             document.getElementById('global-search').addEventListener('input', (e) => {
                 const term = e.target.value;
                 renderFeed(term);
@@ -430,7 +473,6 @@
                 return;
             }
 
-            // Success
             document.getElementById('auth-overlay').classList.add('opacity-0');
             setTimeout(() => document.getElementById('auth-overlay').remove(), 500);
             initApp(data.user);
@@ -445,15 +487,11 @@
             state.user = user;
             document.getElementById('current-user-email').innerText = user.email;
             
-            // Fade in UI
             const shell = document.getElementById('app-shell');
             shell.classList.remove('opacity-0');
             
-            // Start Data Flow
             refreshData();
             setupRealtime();
-            
-            // Set Default View
             switchView('dashboard');
         }
 
@@ -461,43 +499,32 @@
         async function refreshData() {
             setLoading(true);
             try {
-                // 1. ENTRIES (Public)
+                // Fetch Entries
                 const { data: ent } = await supabaseClient.from('entries').select('*');
                 state.entries = ent || [];
 
-                // 2. USERS (Admin View)
-                // We wrap this in a try/catch specifically because RLS/Permissions might block it
-                // or the view might not exist.
+                // Fetch User Metadata
                 try {
                     const { data: usrs, error } = await supabaseClient.from('admin_users_readonly').select('*');
                     if(error) throw error;
-                    
-                    state.usersMap = (usrs || []).reduce((acc, u) => {
-                        acc[u.uid] = u; 
-                        return acc;
-                    }, {});
+                    state.usersMap = (usrs || []).reduce((acc, u) => { acc[u.uid] = u; return acc; }, {});
                     document.getElementById('sql-warning').classList.add('hidden');
                 } catch (e) {
-                    console.warn("Metadata Fetch Error:", e);
+                    console.warn("Metadata Warn:", e);
                     document.getElementById('sql-warning').classList.remove('hidden');
-                    // Fallback map is empty, getUserInfo will handle it
                 }
 
-                // 3. VOTES (Protected Table)
-                const { data: vts, error: vError } = await supabaseClient
-                    .from('user_votes')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-                
+                // Fetch Votes
+                const { data: vts, error: vError } = await supabaseClient.from('user_votes').select('*').order('created_at', { ascending: false });
                 if(vError) throw vError;
-                
                 state.votes = vts || [];
 
-                // Update All UI Components
+                // Update UI
                 updateDashboard();
                 renderFeed();
                 renderVoterList();
                 renderCandidates();
+                updateTicker();
 
             } catch (err) {
                 console.error("Critical Data Error:", err);
@@ -510,13 +537,18 @@
         function setupRealtime() {
             supabaseClient.channel('admin-feed')
                 .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'user_votes' }, payload => {
-                    // Prepend new vote
                     state.votes.unshift(payload.new);
-                    // Update UI lightly (don't re-render charts immediately for perf, or do throttle)
                     updateDashboardMetricsOnly(); 
                     renderFeed(document.getElementById('global-search').value);
                     
-                    // Flash Dashboard Count
+                    // Add to ticker immediately
+                    const u = getUserInfo(payload.new.user_id);
+                    const e = getEntryInfo(payload.new.entry_id);
+                    const ticker = document.getElementById('live-ticker');
+                    const span = document.createElement('span');
+                    span.innerText = `[${new Date().toLocaleTimeString()}] ${u.display_name} -> ${e.name} (${payload.new.score})`;
+                    ticker.prepend(span);
+                    
                     const counter = document.getElementById('d-total-votes');
                     counter.classList.add('text-primary');
                     setTimeout(() => counter.classList.remove('text-primary'), 500);
@@ -524,15 +556,9 @@
                 .subscribe();
         }
 
-        // --- HELPERS ---
         function getUserInfo(uid) {
             if (state.usersMap[uid]) return state.usersMap[uid];
-            return {
-                uid: uid,
-                display_name: 'Unknown User',
-                email: 'No Email Data',
-                avatar_url: null
-            };
+            return { uid: uid, display_name: 'Unknown User', email: 'No Email Data', avatar_url: null };
         }
 
         function getEntryInfo(eid) {
@@ -545,24 +571,19 @@
             else loader.classList.add('hidden');
         }
 
-        // --- UI: DASHBOARD ---
+        // --- DASHBOARD ---
         function updateDashboard() {
             updateDashboardMetricsOnly();
             updateCharts();
-            updateDashboardFeed();
         }
 
         function updateDashboardMetricsOnly() {
-            // Cards
             document.getElementById('d-total-votes').innerText = state.votes.length.toLocaleString();
+            document.getElementById('d-active-voters').innerText = new Set(state.votes.map(v => v.user_id)).size.toLocaleString();
             
-            const uniqueVoters = new Set(state.votes.map(v => v.user_id)).size;
-            document.getElementById('d-active-voters').innerText = uniqueVoters.toLocaleString();
-
             const avg = state.votes.length ? (state.votes.reduce((a,b)=>a+b.score,0) / state.votes.length).toFixed(1) : 0;
             document.getElementById('d-avg-score').innerText = avg;
 
-            // Calc Top Candidate
             const counts = {};
             state.votes.forEach(v => counts[v.entry_id] = (counts[v.entry_id] || 0) + 1);
             let topId = Object.keys(counts).sort((a,b) => counts[b] - counts[a])[0];
@@ -570,36 +591,31 @@
             document.getElementById('d-top-candidate').innerText = topEntry.name || '--';
         }
 
-        function updateDashboardFeed() {
-            const container = document.getElementById('dashboard-feed-preview');
-            container.innerHTML = '';
-            state.votes.slice(0, 5).forEach(v => {
+        function updateTicker() {
+            const ticker = document.getElementById('live-ticker');
+            ticker.innerHTML = '';
+            // Animation reset
+            ticker.style.animation = 'none';
+            ticker.offsetHeight; /* trigger reflow */
+            ticker.style.animation = 'marquee 60s linear infinite';
+            
+            state.votes.slice(0, 20).forEach(v => {
                 const u = getUserInfo(v.user_id);
                 const e = getEntryInfo(v.entry_id);
-                const div = document.createElement('div');
-                div.className = 'px-5 py-3 flex items-center justify-between text-xs hover:bg-white/5 transition-colors';
-                div.innerHTML = `
-                    <div class="flex items-center gap-3">
-                        <div class="w-2 h-2 rounded-full ${v.score > 50 ? 'bg-success' : 'bg-danger'}"></div>
-                        <span class="text-white font-medium">${u.display_name || 'User'}</span>
-                        <span class="text-muted">voted for</span>
-                        <span class="text-white">${e.name}</span>
-                    </div>
-                    <span class="font-mono font-bold ${v.score > 80 ? 'text-primary' : 'text-muted'}">${v.score}</span>
-                `;
-                container.appendChild(div);
+                const span = document.createElement('span');
+                span.innerHTML = `<span class="text-primary font-bold">${u.display_name}</span> voted <span class="font-bold text-white">${v.score}</span> for ${e.name}`;
+                ticker.appendChild(span);
             });
         }
 
         function updateCharts() {
-            // Chart 1: Volume (Votes per hour/bucket - simplified to last 20 votes for demo or time based)
-            // Ideally we bucket by hour. Let's do simple bucket by hour.
+            // Volume Chart
             const hourBuckets = {};
             state.votes.forEach(v => {
                 const key = new Date(v.created_at).getHours() + ":00";
                 hourBuckets[key] = (hourBuckets[key] || 0) + 1;
             });
-            const labels = Object.keys(hourBuckets).reverse().slice(-12); // Last 12 data points
+            const labels = Object.keys(hourBuckets).reverse().slice(-12);
             const dataVol = labels.map(k => hourBuckets[k]);
 
             const ctx1 = document.getElementById('chart-volume').getContext('2d');
@@ -609,26 +625,13 @@
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: 'Votes',
-                        data: dataVol,
-                        borderColor: '#6366F1',
-                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
-                        fill: true,
-                        tension: 0.4
+                        label: 'Votes', data: dataVol, borderColor: '#6366F1', backgroundColor: 'rgba(99, 102, 241, 0.1)', fill: true, tension: 0.4
                     }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { grid: { color: '#2A2A2A' }, ticks: { color: '#71717A' } },
-                        x: { grid: { display: false }, ticks: { color: '#71717A' } }
-                    }
-                }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { grid: { color: '#2A2A2A' } } } }
             });
 
-            // Chart 2: Distribution
+            // Distribution Chart
             const buckets = { '0-20': 0, '21-40': 0, '41-60': 0, '61-80': 0, '81-100': 0 };
             state.votes.forEach(v => {
                 if(v.score <= 20) buckets['0-20']++;
@@ -644,29 +647,21 @@
                 type: 'doughnut',
                 data: {
                     labels: Object.keys(buckets),
-                    datasets: [{
-                        data: Object.values(buckets),
-                        backgroundColor: ['#EF4444', '#F97316', '#EAB308', '#3B82F6', '#10B981'],
-                        borderWidth: 0
-                    }]
+                    datasets: [{ data: Object.values(buckets), backgroundColor: ['#EF4444', '#F97316', '#EAB308', '#3B82F6', '#10B981'], borderWidth: 0 }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { position: 'right', labels: { color: '#A1A1AA', font: { size: 10 } } } }
-                }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: '#A1A1AA', font: { size: 10 } } } } }
             });
         }
 
-        // --- UI: FEED ---
+        // --- FEED ---
         let currentFeedFilter = 'all';
         function filterFeed(type) {
             currentFeedFilter = type;
             document.querySelectorAll('.feed-filter').forEach(b => {
-                if(b.dataset.filter === type) b.classList.add('bg-white', 'text-black', 'border-transparent');
-                else b.classList.remove('bg-white', 'text-black', 'border-transparent');
-                if(b.dataset.filter !== type) b.classList.add('bg-surface', 'text-gray-400', 'border-border');
-                else b.classList.remove('bg-surface', 'text-gray-400', 'border-border');
+                if(b.dataset.filter === type) b.classList.replace('bg-surface', 'bg-white');
+                else b.classList.replace('bg-white', 'bg-surface');
+                if(b.dataset.filter === type) b.classList.replace('text-gray-400', 'text-black');
+                else b.classList.replace('text-black', 'text-gray-400');
             });
             renderFeed(document.getElementById('global-search').value);
         }
@@ -679,97 +674,85 @@
             let filtered = state.votes.filter(v => {
                 const u = getUserInfo(v.user_id);
                 const e = getEntryInfo(v.entry_id);
-                // Search
                 const matchSearch = (
                     v.id.includes(term) ||
                     (u.display_name || '').toLowerCase().includes(term) ||
                     (u.email || '').toLowerCase().includes(term) ||
                     (e.name || '').toLowerCase().includes(term)
                 );
-                // Filter
                 let matchFilter = true;
                 if(currentFeedFilter === 'high' && v.score < 90) matchFilter = false;
                 if(currentFeedFilter === 'low' && v.score > 20) matchFilter = false;
-
                 return matchSearch && matchFilter;
             });
 
-            // Limit for DOM performance
             filtered.slice(0, 100).forEach(v => {
                 const u = getUserInfo(v.user_id);
                 const e = getEntryInfo(v.entry_id);
-                
                 const tr = document.createElement('tr');
                 tr.className = 'hover:bg-white/5 transition-colors border-b border-border/50 group';
                 tr.innerHTML = `
                     <td class="px-4 py-3 text-muted font-mono text-[10px] whitespace-nowrap">${new Date(v.created_at).toLocaleTimeString()}</td>
                     <td class="px-4 py-3">
                         <div class="flex items-center gap-3 cursor-pointer" onclick="openVoter('${v.user_id}')">
-                            ${u.avatar_url 
-                                ? `<img src="${u.avatar_url}" class="w-6 h-6 rounded bg-black object-cover border border-border">`
-                                : `<div class="w-6 h-6 rounded bg-surface border border-border flex items-center justify-center text-[10px] text-muted font-bold">${(u.display_name||'U')[0]}</div>`
-                            }
-                            <div>
-                                <div class="font-bold text-gray-200 text-[11px] group-hover:text-primary transition-colors">${u.display_name}</div>
-                                <div class="text-[9px] text-muted font-mono hidden group-hover:block">${u.email}</div>
-                            </div>
+                            ${u.avatar_url ? `<img src="${u.avatar_url}" class="w-6 h-6 rounded bg-black object-cover border border-border">` : `<div class="w-6 h-6 rounded bg-surface border border-border flex items-center justify-center text-[10px] text-muted font-bold">${(u.display_name||'U')[0]}</div>`}
+                            <div class="font-bold text-gray-200 text-[11px] group-hover:text-primary transition-colors">${u.display_name}</div>
                         </div>
                     </td>
-                    <td class="px-4 py-3">
-                         <div class="flex items-center gap-2">
-                            <div class="w-1.5 h-1.5 rounded-full bg-accent/50"></div>
-                            <span class="text-gray-300 text-xs">${e.name}</span>
-                        </div>
-                    </td>
-                    <td class="px-4 py-3 text-right">
-                        <span class="font-mono text-xs font-bold ${v.score < 30 ? 'text-red-500' : (v.score > 80 ? 'text-green-500' : 'text-gray-400')}">
-                            ${v.score}
-                        </span>
-                    </td>
+                    <td class="px-4 py-3"><div class="flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full bg-accent/50"></div><span class="text-gray-300 text-xs">${e.name}</span></div></td>
+                    <td class="px-4 py-3 text-right"><span class="font-mono text-xs font-bold ${v.score < 30 ? 'text-red-500' : (v.score > 80 ? 'text-green-500' : 'text-gray-400')}">${v.score}</span></td>
                 `;
                 tbody.appendChild(tr);
             });
             lucide.createIcons();
         }
 
-        // --- UI: VOTERS & INTEGRITY ---
+        // --- VOTERS ---
         function renderVoterList(filter = '') {
             const container = document.getElementById('voter-list-container');
             container.innerHTML = '';
 
-            // Aggregate Data
             const stats = {};
             state.votes.forEach(v => {
-                if(!stats[v.user_id]) stats[v.user_id] = { count: 0, sum: 0 };
+                if(!stats[v.user_id]) stats[v.user_id] = { count: 0, sum: 0, timestamps: [], scores: [] };
                 stats[v.user_id].count++;
                 stats[v.user_id].sum += v.score;
+                stats[v.user_id].timestamps.push(new Date(v.created_at).getTime());
+                stats[v.user_id].scores.push(v.score);
             });
 
             const list = Object.keys(stats).map(uid => ({ ...getUserInfo(uid), ...stats[uid] }));
             const term = filter.toLowerCase();
             
             list.filter(u => 
-                (u.display_name||'').toLowerCase().includes(term) || 
-                (u.email||'').toLowerCase().includes(term) ||
-                u.uid.includes(term)
+                (u.display_name||'').toLowerCase().includes(term) || (u.email||'').toLowerCase().includes(term) || u.uid.includes(term)
             ).sort((a,b) => b.count - a.count).forEach(u => {
+                // Heuristics
+                const avg = u.sum / u.count;
+                const distinctScores = new Set(u.scores).size;
+                const duration = u.count > 1 ? (Math.max(...u.timestamps) - Math.min(...u.timestamps)) : 0;
+                const msPerVote = u.count > 1 ? duration / u.count : 9999999;
+                
+                let flag = null;
+                if (u.count > 5) {
+                    if (msPerVote < 2000 && distinctScores > 1) flag = 'RAPID FIRE'; 
+                    else if (distinctScores === 1) flag = 'MONOLITH';
+                    else if (avg < 10 || avg > 90) flag = 'POLARIZED';
+                }
+
                 const el = document.createElement('div');
                 el.className = 'p-3 rounded-lg hover:bg-surfaceHighlight cursor-pointer flex items-center gap-3 group transition-all border border-transparent hover:border-border';
                 el.onclick = () => openVoter(u.uid);
-                
-                // Integrity Check Mini
-                const isSus = (u.count > 10 && (u.sum/u.count < 10 || u.sum/u.count > 90));
-
                 el.innerHTML = `
                     <div class="relative">
-                        ${u.avatar_url 
-                            ? `<img src="${u.avatar_url}" class="w-8 h-8 rounded bg-black object-cover">`
-                            : `<div class="w-8 h-8 rounded bg-surface border border-border flex items-center justify-center text-muted text-xs font-bold">${(u.display_name||'U')[0]}</div>`
-                        }
-                        ${isSus ? `<div class="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-red-500 border border-black"></div>` : ''}
+                        ${u.avatar_url ? `<img src="${u.avatar_url}" class="w-8 h-8 rounded bg-black object-cover">` : `<div class="w-8 h-8 rounded bg-surface border border-border flex items-center justify-center text-muted text-xs font-bold">${(u.display_name||'U')[0]}</div>`}
+                        ${flag ? `<div class="absolute -top-1 -right-1 w-2 h-2 rounded-full ${flag === 'RAPID FIRE' ? 'bg-orange-500' : 'bg-red-500'} border border-black"></div>` : ''}
                     </div>
                     <div class="flex-1 min-w-0">
-                        <div class="text-xs font-bold text-gray-300 group-hover:text-white truncate">${u.display_name}</div>
+                        <div class="text-xs font-bold text-gray-300 group-hover:text-white truncate flex items-center gap-2">
+                            ${u.display_name}
+                            ${flag ? `<span class="text-[9px] px-1 rounded bg-white/10 text-gray-400 font-mono">${flag[0]}</span>` : ''}
+                        </div>
                         <div class="text-[10px] text-muted truncate">${u.email}</div>
                     </div>
                     <div class="text-right">
@@ -788,37 +771,56 @@
             const u = getUserInfo(uid);
             const votes = state.votes.filter(v => v.user_id === uid);
             
-            // Populate Header
+            // Advanced Metrics
+            const scores = votes.map(v => v.score);
+            const timestamps = votes.map(v => new Date(v.created_at).getTime()).sort((a,b) => a-b);
+            
+            const avg = votes.length ? (votes.reduce((a,b)=>a+b.score,0)/votes.length).toFixed(1) : 0;
+            const variance = votes.length ? (scores.reduce((a,b)=>a + Math.pow(b-avg, 2), 0) / votes.length).toFixed(0) : 0;
+            const duration = timestamps.length > 1 ? (timestamps[timestamps.length-1] - timestamps[0]) : 0;
+            const avgTimePerVote = votes.length > 1 ? (duration / 1000 / votes.length).toFixed(1) : '--';
+
+            // UI Population
             document.getElementById('vd-name').innerText = u.display_name || 'Anonymous';
             document.getElementById('vd-email').innerText = u.email || 'No Email';
             document.getElementById('vd-id').innerText = uid;
             document.getElementById('vd-avatar').src = u.avatar_url || 'https://ui-avatars.com/api/?background=000&color=fff&name=' + (u.display_name || 'U');
 
-            // Stats
             document.getElementById('vd-count').innerText = votes.length;
-            const avg = votes.length ? (votes.reduce((a,b)=>a+b.score,0)/votes.length).toFixed(1) : 0;
             document.getElementById('vd-avg').innerText = avg;
-            const max = Math.max(...votes.map(v=>v.score), 0);
-            const min = Math.min(...votes.map(v=>v.score), 0);
-            document.getElementById('vd-high').innerText = max;
-            document.getElementById('vd-low').innerText = min;
+            document.getElementById('vd-velocity').innerText = avgTimePerVote !== '--' ? avgTimePerVote + 's' : '--';
+            document.getElementById('vd-variance').innerText = variance;
 
-            // Integrity Logic
+            // Revised Integrity Logic
             const badge = document.getElementById('vd-integrity-badge');
             const dot = document.getElementById('vd-integrity-dot');
-            
-            // Simple Heuristic: If > 10 votes and avg is extreme (<15 or >85), mark suspicious
-            if(votes.length > 5 && (avg < 15 || avg > 85)) {
-                badge.className = "inline-flex items-center gap-1.5 px-2 py-1 rounded bg-red-500/10 text-red-500 border border-red-500/20 text-[10px] font-bold";
-                badge.innerText = "SUSPICIOUS ACTIVITY";
-                dot.className = "absolute -top-1 -right-1 w-3 h-3 rounded-full bg-red-500 border-2 border-surface animate-pulse";
-            } else {
-                badge.className = "inline-flex items-center gap-1.5 px-2 py-1 rounded bg-green-500/10 text-green-500 border border-green-500/20 text-[10px] font-bold";
-                badge.innerText = "GOOD STANDING";
-                dot.className = "absolute -top-1 -right-1 w-3 h-3 rounded-full bg-green-500 border-2 border-surface";
+            const distinctScores = new Set(scores).size;
+
+            let status = 'GOOD STANDING';
+            let statusColor = 'text-green-500';
+            let statusBg = 'bg-green-500';
+
+            if (votes.length > 5) {
+                if (distinctScores === 1) {
+                    status = 'MONOLITHIC BEHAVIOR';
+                    statusColor = 'text-red-500';
+                    statusBg = 'bg-red-500';
+                } else if (parseFloat(avgTimePerVote) < 2.0) {
+                    status = 'RAPID FIRE (BOT-LIKE)';
+                    statusColor = 'text-orange-500';
+                    statusBg = 'bg-orange-500';
+                } else if (avg < 10 || avg > 90) {
+                    status = 'POLARIZED VOTING';
+                    statusColor = 'text-yellow-500';
+                    statusBg = 'bg-yellow-500';
+                }
             }
 
-            // History List
+            badge.className = `inline-flex items-center gap-1.5 px-2 py-1 rounded ${statusBg}/10 ${statusColor} border ${statusBg}/20 text-[10px] font-bold`;
+            badge.innerText = status;
+            dot.className = `absolute -top-1 -right-1 w-3 h-3 rounded-full ${statusBg} border-2 border-surface ${status === 'GOOD STANDING' ? '' : 'animate-pulse'}`;
+
+            // History
             const history = document.getElementById('vd-history');
             history.innerHTML = '';
             votes.forEach(v => {
@@ -836,25 +838,108 @@
             });
         }
 
-        // --- UI: CANDIDATES ---
+        // --- CANDIDATES & COMPARISON ---
+        function enableCompareMode() {
+            state.compareMode = !state.compareMode;
+            state.compareSelection = [];
+            
+            const btn = document.getElementById('compare-trigger-btn');
+            if(state.compareMode) {
+                btn.innerHTML = `<i data-lucide="check" class="w-3 h-3"></i> DONE COMPARING`;
+                btn.className = "px-3 py-1.5 bg-green-500/10 border border-green-500/20 text-green-500 rounded text-[10px] font-bold hover:bg-green-500/20 transition-all flex items-center gap-2";
+                document.querySelectorAll('.candidate-card').forEach(el => {
+                    el.classList.add('ring-2', 'ring-primary/20', 'cursor-pointer');
+                    el.onclick = (e) => selectForCompare(el.dataset.id);
+                });
+            } else {
+                btn.innerHTML = `<i data-lucide="scale" class="w-3 h-3"></i> COMPARE MODE`;
+                btn.className = "px-3 py-1.5 bg-accent/10 border border-accent/20 text-accent rounded text-[10px] font-bold hover:bg-accent/20 transition-all flex items-center gap-2";
+                renderCandidates(); // Reset
+            }
+        }
+
+        function selectForCompare(id) {
+            if(!state.compareMode) return;
+            
+            if(state.compareSelection.includes(id)) {
+                state.compareSelection = state.compareSelection.filter(x => x !== id);
+                document.getElementById(`cand-${id}`).classList.remove('ring-primary', 'ring-4');
+            } else {
+                if(state.compareSelection.length >= 2) {
+                    alert("Max 2 candidates for comparison.");
+                    return;
+                }
+                state.compareSelection.push(id);
+                document.getElementById(`cand-${id}`).classList.add('ring-primary', 'ring-4');
+                
+                if(state.compareSelection.length === 2) {
+                    showCompareModal();
+                }
+            }
+        }
+
+        function showCompareModal() {
+            document.getElementById('compare-modal').classList.remove('hidden');
+            const [id1, id2] = state.compareSelection;
+            const c1 = getCandidateStats(id1);
+            const c2 = getCandidateStats(id2);
+            
+            const renderCard = (c) => `
+                <div class="flex flex-col h-full bg-black/50 rounded-lg p-6">
+                    <img src="${c.image_url}" class="w-24 h-24 rounded-full mx-auto mb-4 object-cover border-4 border-surface shadow-2xl">
+                    <h2 class="text-2xl font-bold text-center text-white mb-1">${c.name}</h2>
+                    <p class="text-center text-xs text-muted mb-6">${c.section}</p>
+                    
+                    <div class="space-y-4">
+                        <div class="flex justify-between border-b border-border pb-2">
+                            <span class="text-muted text-xs uppercase">Total Votes</span>
+                            <span class="font-mono font-bold text-white text-lg">${c.count}</span>
+                        </div>
+                        <div class="flex justify-between border-b border-border pb-2">
+                            <span class="text-muted text-xs uppercase">Avg Score</span>
+                            <span class="font-mono font-bold text-primary text-lg">${c.avg}</span>
+                        </div>
+                         <div class="flex justify-between border-b border-border pb-2">
+                            <span class="text-muted text-xs uppercase">Controversy</span>
+                            <span class="font-mono font-bold ${c.controversy > 25 ? 'text-red-500' : 'text-green-500'} text-lg">${c.controversy}%</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('compare-content').innerHTML = `
+                ${renderCard(c1)}
+                ${renderCard(c2)}
+                <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                     <div class="w-12 h-12 rounded-full bg-black border border-border flex items-center justify-center text-white font-bold text-xl z-10 shadow-xl">VS</div>
+                </div>
+            `;
+        }
+
+        function toggleCompareMode(show) {
+             document.getElementById('compare-modal').classList.add('hidden');
+             enableCompareMode(); // Reset state
+        }
+
+        function getCandidateStats(id) {
+            const e = getEntryInfo(id);
+            const vs = state.votes.filter(v => v.entry_id === id);
+            const avg = vs.length ? (vs.reduce((a,b)=>a+b.score,0)/vs.length) : 0;
+            const variance = vs.length ? (vs.reduce((a,b) => a + Math.pow(b.score - avg, 2), 0) / vs.length) : 0;
+            return { ...e, count: vs.length, avg: avg.toFixed(1), controversy: Math.sqrt(variance).toFixed(0) };
+        }
+
         function renderCandidates() {
             const grid = document.getElementById('candidates-grid');
             grid.innerHTML = '';
 
-            const stats = state.entries.map(e => {
-                const vs = state.votes.filter(v => v.entry_id === e.id);
-                const avg = vs.length ? (vs.reduce((a,b)=>a+b.score,0)/vs.length) : 0;
-                
-                // Controversy Score: Standard Deviation
-                const variance = vs.length ? (vs.reduce((a,b) => a + Math.pow(b.score - avg, 2), 0) / vs.length) : 0;
-                const stdDev = Math.sqrt(variance);
-                
-                return { ...e, count: vs.length, avg: avg.toFixed(1), controversy: stdDev.toFixed(0) };
-            }).sort((a,b) => b.count - a.count);
+            const stats = state.entries.map(e => getCandidateStats(e.id)).sort((a,b) => b.count - a.count);
 
             stats.forEach(e => {
                 const el = document.createElement('div');
-                el.className = "glass-panel rounded-xl overflow-hidden hover:border-primary/50 transition-colors group relative";
+                el.id = `cand-${e.id}`;
+                el.dataset.id = e.id;
+                el.className = "candidate-card glass-panel rounded-xl overflow-hidden hover:border-primary/50 transition-all group relative";
                 
                 let controversyBadge = '';
                 if(e.controversy > 30) controversyBadge = `<div class="absolute top-2 right-2 bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow-lg">CONTROVERSIAL</div>`;
@@ -877,11 +962,6 @@
                             <div class="text-[9px] text-muted uppercase font-bold">Avg Score</div>
                             <div class="text-lg font-bold text-primary font-mono">${e.avg}</div>
                         </div>
-                        <div class="col-span-2 pt-2 border-t border-border mt-1">
-                             <div class="w-full bg-gray-800 h-1.5 rounded-full overflow-hidden">
-                                <div class="bg-gradient-to-r from-primary to-accent h-full" style="width: ${e.avg}%"></div>
-                             </div>
-                        </div>
                     </div>
                 `;
                 grid.appendChild(el);
@@ -901,7 +981,6 @@
                     el.classList.remove('text-muted');
                 }
             });
-            document.getElementById('page-title').innerText = viewName.charAt(0).toUpperCase() + viewName.slice(1);
         }
 
         function exportCSV() {
@@ -911,7 +990,6 @@
                 const e = getEntryInfo(v.entry_id);
                 csv += `${v.id},${v.created_at},${v.user_id},"${u.display_name||''}",${u.email||''},${v.entry_id},"${e.name||''}",${v.score}\n`;
             });
-            
             const blob = new Blob([csv], { type: 'text/csv' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
