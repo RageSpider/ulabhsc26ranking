@@ -252,24 +252,51 @@
 
         // --- INIT ---
         async function init() {
+            console.log("Initializing Nexus...");
             await checkUser();
             await fetchEntries();
-            if(currentUser) await fetchUserVotes();
+            
+            if(currentUser) {
+                console.log("User logged in:", currentUser.email);
+                await fetchUserVotes();
+            } else {
+                console.log("Guest mode");
+            }
+
             renderEntries(entries);
             
             // Realtime updates
             supabase.channel('public:ranking_stats')
                 .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'ranking_stats' }, payload => {
+                    console.log("Realtime update received", payload);
                     // Optimistic update or refetch
                     fetchEntries().then(() => renderEntries(entries)); 
                 })
-                .subscribe();
+                .subscribe((status) => {
+                    console.log("Realtime status:", status);
+                });
         }
 
         // --- DATA ---
         async function fetchEntries() {
+            // Using Left Join syntax for stats
             const { data, error } = await supabase.from('entries').select(`*, ranking_stats ( average_score, count )`);
-            if (!error) {
+            
+            if (error) {
+                console.error("Error fetching entries:", error);
+                document.getElementById('ranking-grid').innerHTML = `
+                    <div class="col-span-full text-center text-red-400 font-mono">
+                        <p>Database Connection Failed</p>
+                        <p class="text-xs opacity-50">${error.message}</p>
+                    </div>`;
+                return;
+            }
+
+            if (!data || data.length === 0) {
+                console.warn("No entries found in database.");
+                // Inject dummy data for visualization purposes if DB is empty
+                entries = []; // Keep empty so user knows to run sync script
+            } else {
                 entries = data.map(e => ({
                     ...e,
                     score: e.ranking_stats?.[0]?.average_score || 0,
@@ -279,7 +306,9 @@
         }
 
         async function fetchUserVotes() {
-            const { data } = await supabase.from('user_votes').select('entry_id, score').eq('user_id', currentUser.id);
+            if(!currentUser) return;
+            const { data, error } = await supabase.from('user_votes').select('entry_id, score').eq('user_id', currentUser.id);
+            if (error) console.error("Error fetching votes:", error);
             if(data) data.forEach(v => userVotes[v.entry_id] = v.score);
         }
 
@@ -287,6 +316,15 @@
         function renderEntries(data) {
             const grid = document.getElementById('ranking-grid');
             grid.innerHTML = '';
+
+            if (data.length === 0) {
+                 grid.innerHTML = `
+                    <div class="col-span-full text-center py-20 flex flex-col items-center opacity-50">
+                        <p class="font-mono text-sm uppercase tracking-widest mb-2">No Signal</p>
+                        <p class="text-xs font-mono text-white/40">Database Empty. Please run the sync script.</p>
+                    </div>`;
+                return;
+            }
 
             data.forEach((entry, index) => {
                 const hasVoted = userVotes[entry.id] !== undefined;
@@ -426,13 +464,37 @@
             const msg = document.getElementById('auth-msg');
             msg.innerText = "Authenticating...";
             
-            let { error } = await supabase.auth.signInWithPassword({ email, password });
+            // 1. Try to Login
+            let { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            
             if (error) {
-                let { error: signUpError } = await supabase.auth.signUp({ email, password });
-                if (signUpError) { msg.innerText = "Access Denied: " + signUpError.message; return; }
+                // 2. If Login fails, try to Sign Up (Auto-Registration)
+                console.log("Login failed, attempting signup:", error.message);
+                
+                const { data: signUpData, error: signUpError } = await supabase.auth.signUp({ email, password });
+                
+                if (signUpError) {
+                    msg.innerText = "Error: " + signUpError.message;
+                    console.error("Signup error:", signUpError);
+                    return;
+                }
+                
+                // If signup successful but session is null, it usually means "Confirm Email" is on in Supabase
+                if (signUpData.user && !signUpData.session) {
+                    msg.innerText = "Confirmation email sent! Please check inbox.";
+                    return;
+                }
+                
                 msg.innerText = "New ID Created. Logging in...";
+            } else {
+                 msg.innerText = "Success. Entering Nexus...";
             }
-            toggleAuthModal(); window.location.reload();
+            
+            // Reload to update UI state
+            setTimeout(() => {
+                 toggleAuthModal(); 
+                 window.location.reload();
+            }, 500);
         });
 
         function openVoteModal(id, section) {
