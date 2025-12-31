@@ -242,7 +242,9 @@
         // In a real public deployment, ensure RLS policies on Supabase are strictly set.
         const SUPABASE_URL = 'https://puguoqviaogqcsjrdkbk.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB1Z3VvcXZpYW9ncWNzanJka2JrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcxMjQ4NTgsImV4cCI6MjA4MjcwMDg1OH0.D7W_uNWY1FpjKtPh7CkBOQNEhyQnYIcZIsFa1LhouPw';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        // FIX: Renamed variable to avoid conflict
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // --- STATE ---
         let entries = [];
@@ -266,7 +268,7 @@
             renderEntries(entries);
             
             // Realtime updates
-            supabase.channel('public:ranking_stats')
+            supabaseClient.channel('public:ranking_stats')
                 .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'ranking_stats' }, payload => {
                     console.log("Realtime update received", payload);
                     // Optimistic update or refetch
@@ -280,7 +282,7 @@
         // --- DATA ---
         async function fetchEntries() {
             // Using Left Join syntax for stats
-            const { data, error } = await supabase.from('entries').select(`*, ranking_stats ( average_score, count )`);
+            const { data, error } = await supabaseClient.from('entries').select(`*, ranking_stats ( average_score, count )`);
             
             if (error) {
                 console.error("Error fetching entries:", error);
@@ -307,7 +309,7 @@
 
         async function fetchUserVotes() {
             if(!currentUser) return;
-            const { data, error } = await supabase.from('user_votes').select('entry_id, score').eq('user_id', currentUser.id);
+            const { data, error } = await supabaseClient.from('user_votes').select('entry_id, score').eq('user_id', currentUser.id);
             if (error) console.error("Error fetching votes:", error);
             if(data) data.forEach(v => userVotes[v.entry_id] = v.score);
         }
@@ -444,11 +446,11 @@
 
         // --- AUTH & VOTING ---
         async function checkUser() {
-            const { data: { session } } = await supabase.auth.getSession();
+            const { data: { session } } = await supabaseClient.auth.getSession();
             currentUser = session?.user;
             const ui = document.getElementById('auth-ui');
             ui.innerHTML = currentUser ? 
-                `<span class="text-xs font-mono text-white/40 mr-2">${currentUser.email.split('@')[0]}</span><button onclick="supabase.auth.signOut().then(()=>location.reload())" class="text-xs text-red-400 hover:text-red-300 font-mono">[ EXIT ]</button>` : 
+                `<span class="text-xs font-mono text-white/40 mr-2">${currentUser.email.split('@')[0]}</span><button onclick="supabaseClient.auth.signOut().then(()=>location.reload())" class="text-xs text-red-400 hover:text-red-300 font-mono">[ EXIT ]</button>` : 
                 `<button onclick="toggleAuthModal()" class="text-xs font-mono tracking-widest text-white/60 hover:text-white uppercase transition-colors">[ Login ]</button>`;
         }
 
@@ -465,13 +467,13 @@
             msg.innerText = "Authenticating...";
             
             // 1. Try to Login
-            let { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            let { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
             
             if (error) {
                 // 2. If Login fails, try to Sign Up (Auto-Registration)
                 console.log("Login failed, attempting signup:", error.message);
                 
-                const { data: signUpData, error: signUpError } = await supabase.auth.signUp({ email, password });
+                const { data: signUpData, error: signUpError } = await supabaseClient.auth.signUp({ email, password });
                 
                 if (signUpError) {
                     msg.innerText = "Error: " + signUpError.message;
@@ -542,7 +544,7 @@
             const btn = document.getElementById('confirm-vote-btn');
             btn.innerText = "Transmitting..."; btn.disabled = true;
             
-            const { error } = await supabase.from('user_votes').insert({ user_id: currentUser.id, entry_id: activeEntryId, score: score });
+            const { error } = await supabaseClient.from('user_votes').insert({ user_id: currentUser.id, entry_id: activeEntryId, score: score });
             if(error) alert(error.message);
             else {
                 userVotes[activeEntryId] = score;

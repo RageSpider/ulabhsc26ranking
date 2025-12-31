@@ -14,7 +14,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <!-- Canvas Confetti for the voting celebration -->
+    <!-- Canvas Confetti -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
     <script>
@@ -61,7 +61,7 @@
             background: #FFC0CB;
             border-radius: 100% 0 100% 0;
             z-index: 0;
-            pointer-events: auto; /* Enable hover interaction */
+            pointer-events: auto;
             opacity: 0.8;
             transition: transform 0.3s ease-out;
             filter: drop-shadow(0 2px 2px rgba(0,0,0,0.05));
@@ -89,7 +89,7 @@
             border-radius: 20px;
             border: 1px solid white;
             box-shadow: 0 15px 35px rgba(255, 158, 174, 0.2);
-            transform: rotate(-3deg) translateZ(20px); /* 3D pop */
+            transform: rotate(-3deg) translateZ(20px);
             transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
         .image-frame:hover {
@@ -281,7 +281,9 @@
         // --- 1. CONFIG & INIT ---
         const SUPABASE_URL = 'https://puguoqviaogqcsjrdkbk.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB1Z3VvcXZpYW9ncWNzanJka2JrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcxMjQ4NTgsImV4cCI6MjA4MjcwMDg1OH0.D7W_uNWY1FpjKtPh7CkBOQNEhyQnYIcZIsFa1LhouPw';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        // FIX: Renamed 'supabase' to 'supabaseClient' to avoid conflict with global library variable
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         
         // --- 2. ANIMATIONS & VISUALS ---
         
@@ -427,8 +429,8 @@
         let entryId = null;
 
         async function initDB() {
-            // Find ID for Roll 119 Section B
-            const { data } = await supabase.from('entries')
+            // Updated to use supabaseClient
+            const { data } = await supabaseClient.from('entries')
                 .select('id')
                 .eq('roll', '119')
                 .eq('section', 'Section B')
@@ -437,8 +439,8 @@
         }
 
         async function submitInlineVote(btnElement) {
-            // Check Auth
-            const { data: { session } } = await supabase.auth.getSession();
+            // Check Auth with supabaseClient
+            const { data: { session } } = await supabaseClient.auth.getSession();
             if(!session) {
                 // Shake button to indicate error
                 gsap.to(btnElement, { x: [-5, 5, -5, 5, 0], duration: 0.4 });
@@ -460,7 +462,7 @@
             const originalText = btnElement.innerText;
             btnElement.innerText = "Saving...";
             
-            const { error } = await supabase.from('user_votes').insert({
+            const { error } = await supabaseClient.from('user_votes').insert({
                 user_id: session.user.id,
                 entry_id: entryId,
                 score: parseInt(score)
