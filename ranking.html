@@ -40,11 +40,16 @@
                         'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                         'spin-slow': 'spin 12s linear infinite',
                         'shimmer': 'shimmer 2s linear infinite',
+                        'float': 'float 6s ease-in-out infinite',
                     },
                     keyframes: {
                         shimmer: {
                             '0%': { backgroundPosition: '-1000px 0' },
                             '100%': { backgroundPosition: '1000px 0' }
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' }
                         }
                     }
                 }
@@ -73,28 +78,32 @@
 
         /* --- UI ELEMENTS --- */
         .glass-panel {
-            background: rgba(20, 20, 20, 0.6);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(10, 10, 10, 0.7);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         .nav-btn.active {
-            background: #fff; color: #000; box-shadow: 0 0 15px rgba(255,255,255,0.4);
+            background: #fff; color: #000; box-shadow: 0 0 20px rgba(255,255,255,0.3);
         }
 
         /* --- APEX CARD (Rank 1) --- */
         .apex-card {
             position: relative; overflow: hidden;
-            border: 1px solid rgba(255, 215, 0, 0.2);
-            box-shadow: 0 0 40px rgba(0,0,0,0.8);
-            transition: transform 0.6s var(--ease-out-expo);
+            border: 1px solid rgba(255, 215, 0, 0.15);
+            box-shadow: 0 20px 50px -10px rgba(0,0,0,0.8);
+            transition: all 0.6s var(--ease-out-expo);
         }
         .apex-card::before {
             content: ''; position: absolute; inset: 0; z-index: 10;
-            background: linear-gradient(180deg, rgba(255,215,0,0.05) 0%, transparent 40%);
+            background: linear-gradient(180deg, rgba(255,215,0,0.03) 0%, transparent 40%);
             pointer-events: none;
         }
-        .apex-card:hover { transform: scale-[1.01]}
+        .apex-card:hover { 
+            transform: scale-[1.005] translateY(-5px);
+            border-color: rgba(255, 215, 0, 0.4);
+            box-shadow: 0 30px 60px -12px rgba(255, 215, 0, 0.1);
+        }
 
         /* Holographic Border Effect */
         .holo-border {
@@ -106,7 +115,7 @@
         .holo-border::after {
             content: ""; position: absolute; inset: -1px;
             background: linear-gradient(45deg, transparent, rgba(255,215,0,0.4), transparent);
-            animation: spin-slow 4s linear infinite;
+            animation: spin-slow 8s linear infinite;
         }
 
         /* --- DATA ROWS --- */
@@ -114,15 +123,17 @@
             display: grid; grid-template-columns: 60px 80px 1fr 100px 100px;
             align-items: center; padding: 16px;
             border-bottom: 1px solid rgba(255,255,255,0.03);
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
             position: relative; overflow: hidden;
+            background: linear-gradient(90deg, transparent 0%, transparent 100%);
         }
         .data-row::before {
             content: ''; position: absolute; left: 0; top: 0; width: 2px; height: 100%;
             background: #fff; transform: scaleY(0); transition: transform 0.3s ease;
         }
         .data-row:hover {
-            background: rgba(255,255,255,0.03); padding-left: 24px;
+            background: linear-gradient(90deg, rgba(255,255,255,0.03) 0%, transparent 100%);
+            padding-left: 20px;
         }
         .data-row:hover::before { transform: scaleY(1); }
         
@@ -146,29 +157,62 @@
 
         /* --- AUTH MODAL TABS --- */
         .auth-tab {
-            padding: 10px; flex: 1; text-align: center;
-            font-family: 'JetBrains Mono', monospace; font-size: 10px;
-            text-transform: uppercase; letter-spacing: 2px;
-            cursor: pointer; border-bottom: 2px solid transparent; opacity: 0.5;
+            padding: 12px; flex: 1; text-align: center;
+            font-family: 'JetBrains Mono', monospace; font-size: 11px;
+            text-transform: uppercase; letter-spacing: 1px;
+            cursor: pointer; border-bottom: 2px solid transparent; opacity: 0.4;
             transition: all 0.3s ease;
+            color: white;
         }
+        .auth-tab:hover { opacity: 0.7; background: rgba(255,255,255,0.02); }
         .auth-tab.active {
-            border-bottom-color: #fff; opacity: 1;
+            border-bottom-color: #fff; opacity: 1; background: rgba(255,255,255,0.05);
         }
 
         /* --- TICKER --- */
         .ticker-wrap {
-            position: fixed; top: 64px; width: 100%; overflow: hidden; height: 24px;
-            background: rgba(0,0,0,0.8); border-bottom: 1px solid rgba(255,255,255,0.05);
+            position: fixed; top: 64px; width: 100%; overflow: hidden; height: 26px;
+            background: rgba(0,0,0,0.6); border-bottom: 1px solid rgba(255,255,255,0.05);
             z-index: 40; pointer-events: none; display: flex; align-items: center;
+            backdrop-filter: blur(4px);
         }
-        .ticker { display: inline-block; white-space: nowrap; animation: ticker 30s linear infinite; }
-        .ticker-item { display: inline-block; padding: 0 2rem; font-family: 'JetBrains Mono'; font-size: 9px; color: rgba(255,255,255,0.4); }
-        @keyframes ticker { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
+        .ticker { display: inline-block; white-space: nowrap; animation: ticker 45s linear infinite; }
+        .ticker-item { 
+            display: inline-block; padding: 0 2rem; font-family: 'JetBrains Mono'; 
+            font-size: 10px; color: rgba(255,255,255,0.5); letter-spacing: 1px;
+        }
+        .ticker-item strong { color: #fff; }
+        @keyframes ticker { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-50%, 0, 0); } }
 
+        /* --- CUSTOM SLIDER --- */
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; height: 0; width: 0;
+        }
+        
         /* --- ANIMATIONS --- */
         .entry-item { opacity: 0; transform: translateY(20px); animation: fadeInUp 0.6s var(--ease-out-expo) forwards; }
         @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+
+        .shimmer-text {
+            background: linear-gradient(90deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0.1) 100%);
+            background-size: 200% 100%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: shimmer 3s infinite linear;
+        }
+        
+        /* Toast Notification */
+        .toast {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px);
+            background: rgba(255,255,255,0.95); color: black;
+            padding: 12px 24px; border-radius: 99px;
+            font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: bold; text-transform: uppercase;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            opacity: 0; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 200; pointer-events: none;
+        }
+        .toast.active { transform: translateX(-50%) translateY(0); opacity: 1; }
     </style>
 </head>
 <body class="selection:bg-white selection:text-black">
@@ -204,21 +248,30 @@
     <!-- TICKER -->
     <div class="ticker-wrap hidden md:flex">
         <div class="ticker">
-            <span class="ticker-item">SYSTEM STATUS: ONLINE</span>
-            <span class="ticker-item">BATCH 26 INTEGRITY: 100%</span>
-            <span class="ticker-item">LIVE DATA FEED ACTIVE</span>
-            <span class="ticker-item">ENCRYPTED CONNECTION ESTABLISHED</span>
-            <span class="ticker-item">VOTING PROTOCOLS ENABLED</span>
-            <span class="ticker-item">SYSTEM STATUS: ONLINE</span>
-            <span class="ticker-item">BATCH 26 INTEGRITY: 100%</span>
+            <span class="ticker-item"><strong>SYSTEM STATUS:</strong> ONLINE</span>
+            <span class="ticker-item">///</span>
+            <span class="ticker-item"><strong>BATCH 26:</strong> INTEGRITY 100%</span>
+            <span class="ticker-item">///</span>
+            <span class="ticker-item"><strong>LIVE FEED:</strong> ACTIVE</span>
+            <span class="ticker-item">///</span>
+            <span class="ticker-item"><strong>ENCRYPTION:</strong> AES-256</span>
+            <span class="ticker-item">///</span>
+            <span class="ticker-item"><strong>VOTING:</strong> ENABLED</span>
+            <span class="ticker-item">///</span>
+            <!-- Repeat for smooth loop -->
+            <span class="ticker-item"><strong>SYSTEM STATUS:</strong> ONLINE</span>
+            <span class="ticker-item">///</span>
+            <span class="ticker-item"><strong>BATCH 26:</strong> INTEGRITY 100%</span>
+            <span class="ticker-item">///</span>
+            <span class="ticker-item"><strong>LIVE FEED:</strong> ACTIVE</span>
         </div>
     </div>
 
     <!-- MAIN -->
-    <main class="relative z-10 pt-32 pb-20 px-4 md:px-8 lg:px-16 max-w-7xl mx-auto">
+    <main class="relative z-10 pt-36 pb-20 px-4 md:px-8 lg:px-16 max-w-7xl mx-auto">
         
         <!-- HEADER -->
-        <header class="flex flex-col md:flex-row justify-between items-end mb-16 border-b border-white/10 pb-8 gap-6">
+        <header class="flex flex-col md:flex-row justify-between items-end mb-16 border-b border-white/10 pb-8 gap-6 animate-[fadeInUp_0.8s_ease-out]">
             <div class="relative">
                 <div class="absolute -left-6 top-0 h-full w-1 bg-accent-a/50"></div>
                 <p class="font-mono text-[10px] text-accent-a mb-2 uppercase tracking-[0.3em]">Global Aggregation</p>
@@ -234,36 +287,40 @@
                     <span class="text-white text-xl" id="stat-count">--</span>
                 </div>
                 <div>
-                    <span class="block text-white/30 uppercase tracking-widest mb-1 text-[9px]">Votes</span>
+                    <span class="block text-white/30 uppercase tracking-widest mb-1 text-[9px]">Total Votes</span>
                     <span class="text-white text-xl" id="stat-votes">--</span>
                 </div>
             </div>
         </header>
 
         <!-- CONTENT -->
-        <div id="content-area" class="min-h-[600px]">
+        <div id="content-area" class="min-h-[600px] transition-opacity duration-300">
             <div class="space-y-4 animate-pulse opacity-30">
                 <div class="h-[500px] bg-white/5 w-full rounded-2xl border border-white/5"></div>
+                <div class="grid grid-cols-2 gap-4">
+                     <div class="h-[300px] bg-white/5 w-full rounded-xl border border-white/5"></div>
+                     <div class="h-[300px] bg-white/5 w-full rounded-xl border border-white/5"></div>
+                </div>
             </div>
         </div>
 
     </main>
 
     <!-- MOBILE FILTER -->
-    <div class="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-white/10 backdrop-blur-xl border border-white/10 p-1.5 rounded-full flex gap-2 shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
+    <div class="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-black/80 backdrop-blur-xl border border-white/10 p-1.5 rounded-full flex gap-2 shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
         <button onclick="filterBy('all')" class="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center font-bold text-[10px] shadow-lg">ALL</button>
-        <button onclick="filterBy('Section A')" class="w-10 h-10 rounded-full bg-black/40 text-accent-a border border-white/10 flex items-center justify-center font-bold text-[10px]">A</button>
-        <button onclick="filterBy('Section B')" class="w-10 h-10 rounded-full bg-black/40 text-accent-b border border-white/10 flex items-center justify-center font-bold text-[10px]">B</button>
-        <button onclick="filterBy('Section H')" class="w-10 h-10 rounded-full bg-black/40 text-accent-h border border-white/10 flex items-center justify-center font-bold text-[10px]">H</button>
+        <button onclick="filterBy('Section A')" class="w-10 h-10 rounded-full bg-white/5 text-accent-a border border-white/10 flex items-center justify-center font-bold text-[10px]">A</button>
+        <button onclick="filterBy('Section B')" class="w-10 h-10 rounded-full bg-white/5 text-accent-b border border-white/10 flex items-center justify-center font-bold text-[10px]">B</button>
+        <button onclick="filterBy('Section H')" class="w-10 h-10 rounded-full bg-white/5 text-accent-h border border-white/10 flex items-center justify-center font-bold text-[10px]">H</button>
     </div>
 
     <!-- AUTH MODAL (DUAL MODE) -->
     <div id="auth-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/90 backdrop-blur-md transition-opacity duration-300" onclick="toggleAuthModal()"></div>
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-md transition-opacity duration-300" onclick="toggleAuthModal()"></div>
         
-        <div class="relative z-10 w-full max-w-md bg-[#0a0a0a] border border-white/10 shadow-2xl overflow-hidden group">
+        <div class="relative z-10 w-full max-w-md bg-[#0a0a0a] border border-white/10 shadow-2xl overflow-hidden group rounded-lg">
             <!-- Animated Border -->
-            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white to-transparent opacity-50"></div>
+            <div class="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white to-transparent opacity-50"></div>
 
             <!-- Tabs -->
             <div class="flex border-b border-white/10 bg-white/5">
@@ -273,7 +330,7 @@
 
             <div class="p-8">
                 <div class="mb-8 text-center">
-                    <div class="w-12 h-12 bg-white text-black mx-auto flex items-center justify-center mb-4">
+                    <div class="w-12 h-12 bg-white text-black rounded-full mx-auto flex items-center justify-center mb-4 shadow-[0_0_20px_rgba(255,255,255,0.3)]">
                         <i data-lucide="fingerprint" class="w-6 h-6"></i>
                     </div>
                     <h2 class="font-display text-2xl text-white uppercase tracking-widest">Identify</h2>
@@ -284,13 +341,13 @@
                 <form id="login-form" class="space-y-4">
                     <div class="space-y-1">
                         <label class="text-[9px] font-mono text-white/30 uppercase tracking-widest">Email Address</label>
-                        <input type="email" id="login-email" required class="w-full bg-black border border-white/10 p-3 text-sm text-white focus:border-white transition-colors outline-none font-mono">
+                        <input type="email" id="login-email" required class="w-full bg-black border border-white/10 p-3 text-sm text-white focus:border-white transition-colors outline-none font-mono rounded">
                     </div>
                     <div class="space-y-1">
                         <label class="text-[9px] font-mono text-white/30 uppercase tracking-widest">Password</label>
-                        <input type="password" id="login-password" required class="w-full bg-black border border-white/10 p-3 text-sm text-white focus:border-white transition-colors outline-none font-mono">
+                        <input type="password" id="login-password" required class="w-full bg-black border border-white/10 p-3 text-sm text-white focus:border-white transition-colors outline-none font-mono rounded">
                     </div>
-                    <button type="submit" class="w-full py-4 bg-white text-black font-mono uppercase text-xs font-bold tracking-widest hover:bg-gray-200 mt-4">Authenticate</button>
+                    <button type="submit" class="w-full py-4 bg-white text-black font-mono uppercase text-xs font-bold tracking-widest hover:bg-gray-200 mt-4 rounded transition-transform active:scale-95">Authenticate</button>
                 </form>
 
                 <!-- REGISTER FORM -->
@@ -298,22 +355,22 @@
                     <div class="grid grid-cols-2 gap-3">
                         <div class="space-y-1">
                             <label class="text-[9px] font-mono text-white/30 uppercase tracking-widest">Full Name</label>
-                            <input type="text" id="reg-name" required placeholder="John Doe" class="w-full bg-black border border-white/10 p-3 text-xs text-white focus:border-white outline-none font-mono">
+                            <input type="text" id="reg-name" required placeholder="John Doe" class="w-full bg-black border border-white/10 p-3 text-xs text-white focus:border-white outline-none font-mono rounded">
                         </div>
                         <div class="space-y-1">
                             <label class="text-[9px] font-mono text-white/30 uppercase tracking-widest">Username</label>
-                            <input type="text" id="reg-username" required placeholder="@handle" class="w-full bg-black border border-white/10 p-3 text-xs text-white focus:border-white outline-none font-mono">
+                            <input type="text" id="reg-username" required placeholder="@handle" class="w-full bg-black border border-white/10 p-3 text-xs text-white focus:border-white outline-none font-mono rounded">
                         </div>
                     </div>
                     <div class="space-y-1">
                         <label class="text-[9px] font-mono text-white/30 uppercase tracking-widest">Email</label>
-                        <input type="email" id="reg-email" required class="w-full bg-black border border-white/10 p-3 text-xs text-white focus:border-white outline-none font-mono">
+                        <input type="email" id="reg-email" required class="w-full bg-black border border-white/10 p-3 text-xs text-white focus:border-white outline-none font-mono rounded">
                     </div>
                     <div class="space-y-1">
                         <label class="text-[9px] font-mono text-white/30 uppercase tracking-widest">Password</label>
-                        <input type="password" id="reg-password" required class="w-full bg-black border border-white/10 p-3 text-xs text-white focus:border-white outline-none font-mono">
+                        <input type="password" id="reg-password" required class="w-full bg-black border border-white/10 p-3 text-xs text-white focus:border-white outline-none font-mono rounded">
                     </div>
-                    <button type="submit" class="w-full py-4 bg-white/10 text-white border border-white/20 font-mono uppercase text-xs font-bold tracking-widest hover:bg-white hover:text-black transition-all mt-4">Create Identity</button>
+                    <button type="submit" class="w-full py-4 bg-white/10 text-white border border-white/20 font-mono uppercase text-xs font-bold tracking-widest hover:bg-white hover:text-black transition-all mt-4 rounded">Create Identity</button>
                 </form>
 
                 <p id="auth-msg" class="text-center text-[10px] text-accent-b mt-4 h-4 font-mono uppercase tracking-wide"></p>
@@ -326,37 +383,40 @@
         <div class="absolute inset-0 bg-black/90 backdrop-blur-xl transition-opacity duration-300 opacity-0" id="vote-backdrop" onclick="closeVoteModal()"></div>
         
         <div class="absolute right-0 top-0 h-full w-full md:w-[500px] bg-[#0C0C0C] border-l border-white/10 shadow-2xl transform translate-x-full transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] flex flex-col" id="vote-panel">
-            <button onclick="closeVoteModal()" class="absolute top-6 right-6 text-white/30 hover:text-white transition-colors z-50">
-                <i data-lucide="x" class="w-8 h-8"></i>
+            <button onclick="closeVoteModal()" class="absolute top-6 right-6 text-white/30 hover:text-white transition-colors z-50 bg-black/50 p-2 rounded-full">
+                <i data-lucide="x" class="w-6 h-6"></i>
             </button>
 
             <div class="h-[40%] relative bg-black">
-                <div id="vote-img-bg" class="absolute inset-0 bg-cover bg-center opacity-60"></div>
+                <div id="vote-img-bg" class="absolute inset-0 bg-cover bg-center opacity-60 transition-opacity duration-700"></div>
                 <div class="absolute inset-0 bg-gradient-to-t from-[#0C0C0C] via-[#0C0C0C]/50 to-transparent"></div>
-                <div class="absolute bottom-8 left-8 right-8">
-                    <span id="vote-sec-tag" class="text-[9px] font-mono border px-2 py-1 uppercase tracking-widest mb-3 inline-block bg-black/50 backdrop-blur">Section A</span>
-                    <h2 id="vote-name" class="font-display text-4xl text-white mb-1 leading-none">Entity Name</h2>
+                <div class="absolute bottom-8 left-8 right-8 animate-[fadeInUp_0.5s_ease-out_0.2s] opacity-0 fill-mode-forwards" style="animation-fill-mode: forwards;">
+                    <span id="vote-sec-tag" class="text-[9px] font-mono border px-2 py-1 uppercase tracking-widest mb-3 inline-block bg-black/50 backdrop-blur rounded">Section A</span>
+                    <h2 id="vote-name" class="font-display text-4xl md:text-5xl text-white mb-1 leading-none">Entity Name</h2>
                     <p id="vote-theme" class="font-serif italic text-white/50 text-sm">Theme Description</p>
                 </div>
             </div>
 
             <div class="flex-1 p-8 flex flex-col justify-center relative overflow-hidden">
-                <div id="glow-bg" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-blue-500/20 blur-[100px] rounded-full pointer-events-none transition-colors duration-500"></div>
+                <div id="glow-bg" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-blue-500/10 blur-[100px] rounded-full pointer-events-none transition-colors duration-500"></div>
 
-                <div class="relative z-10 space-y-10">
+                <div class="relative z-10 space-y-12">
                     <div class="text-center">
-                        <span id="score-val" class="font-display text-8xl text-white block mb-2 tabular-nums">50</span>
-                        <span id="score-text" class="font-mono text-xs uppercase tracking-[0.4em] text-accent-a">Standard</span>
+                        <div class="relative inline-block">
+                             <span id="score-val" class="font-display text-9xl text-white block mb-2 tabular-nums tracking-tighter shimmer-text">50</span>
+                             <span class="absolute -top-4 -right-4 text-xs font-mono text-white/30">PTS</span>
+                        </div>
+                        <span id="score-text" class="font-mono text-xs uppercase tracking-[0.4em] text-accent-a block mt-2">Standard</span>
                     </div>
 
-                    <div class="relative h-1 bg-white/10 w-full">
-                        <div id="slider-track" class="absolute left-0 top-0 h-full bg-white w-1/2 transition-all duration-75"></div>
+                    <div class="relative h-2 bg-white/10 w-full rounded-full cursor-pointer group">
+                        <div id="slider-track" class="absolute left-0 top-0 h-full bg-white rounded-full w-1/2 transition-all duration-75"></div>
                         <input type="range" id="vote-slider" min="1" max="100" value="50" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20">
-                        <div id="slider-thumb" class="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white rotate-45 pointer-events-none transition-all duration-75 shadow-[0_0_20px_white]" style="left: 50%"></div>
+                        <div id="slider-thumb" class="absolute top-1/2 -translate-y-1/2 w-6 h-6 bg-black border-2 border-white rotate-45 pointer-events-none transition-all duration-75 shadow-[0_0_20px_rgba(255,255,255,0.5)] group-hover:scale-125" style="left: 50%"></div>
                     </div>
 
-                    <button onclick="submitVote()" id="submit-btn" class="w-full py-5 bg-white hover:bg-white/90 text-black font-bold font-mono uppercase tracking-widest transition-all clip-path-slant relative overflow-hidden group">
-                        <span class="relative z-10">Confirm Evaluation</span>
+                    <button onclick="submitVote()" id="submit-btn" class="w-full py-5 bg-white hover:bg-white/90 text-black font-bold font-mono uppercase tracking-widest transition-all clip-path-slant relative overflow-hidden group rounded-sm active:scale-[0.99]">
+                        <span class="relative z-10 flex items-center justify-center gap-2">Confirm Evaluation <i data-lucide="arrow-right" class="w-4 h-4"></i></span>
                         <div class="absolute inset-0 bg-gray-200 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300 z-0"></div>
                     </button>
                 </div>
@@ -378,6 +438,7 @@
         let userVotes = {};
         let currentUser = null;
         let activeEntryId = null;
+        let currentFilter = 'all';
 
         // --- STARFIELD FX ---
         class StarfieldCanvas {
@@ -435,49 +496,63 @@
             await checkUser();
             await fetchEntries();
             if(currentUser) await fetchUserVotes();
-            renderView(entries);
+            
+            // Initial render
+            renderView(filterEntries(entries));
             setupRealtime();
+        }
+
+        function filterEntries(data) {
+            if(currentFilter === 'all') return data;
+            return data.filter(e => e.section === currentFilter);
         }
 
         // --- RENDERER ---
         function renderView(data) {
             const container = document.getElementById('content-area');
-            container.innerHTML = ''; 
-
+            
+            // Clean slate logic
             if (data.length === 0) {
                 container.innerHTML = `<div class="text-center py-32 font-mono text-white/30 text-xs border border-white/10 rounded-lg border-dashed">NO SIGNALS DETECTED</div>`;
                 return;
             }
 
-            // Stats
-            document.getElementById('stat-count').innerText = data.length;
-            document.getElementById('stat-votes').innerText = data.reduce((a,b) => a + (b.votes || 0), 0);
+            // HTML Construction
+            let html = '';
 
             const apex = data[0];
             const elite = data.slice(1, 3);
             const stream = data.slice(3);
 
             // APEX
-            if (apex) container.insertAdjacentHTML('beforeend', createApexCard(apex));
+            if (apex) html += createApexCard(apex);
 
             // ELITE
             if (elite.length > 0) {
-                const eliteWrapper = document.createElement('div');
-                eliteWrapper.className = "grid grid-cols-1 md:grid-cols-2 gap-6 mt-6";
-                elite.forEach((e, i) => eliteWrapper.innerHTML += createEliteCard(e, i + 2));
-                container.appendChild(eliteWrapper);
+                html += `<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">`;
+                elite.forEach((e, i) => html += createEliteCard(e, i + 2));
+                html += `</div>`;
             }
 
             // STREAM
             if (stream.length > 0) {
-                container.insertAdjacentHTML('beforeend', `<div class="mt-16 mb-6 font-mono text-[9px] uppercase tracking-widest text-white/30 flex items-center gap-4"><div class="h-px bg-white/10 flex-1"></div>Global Data Stream<div class="h-px bg-white/10 flex-1"></div></div>`);
-                const streamWrapper = document.createElement('div');
-                streamWrapper.className = "flex flex-col border-t border-white/5";
-                stream.forEach((e, i) => streamWrapper.innerHTML += createStreamRow(e, i + 4));
-                container.appendChild(streamWrapper);
+                html += `<div class="mt-16 mb-6 font-mono text-[9px] uppercase tracking-widest text-white/30 flex items-center gap-4"><div class="h-px bg-white/10 flex-1"></div>Global Data Stream<div class="h-px bg-white/10 flex-1"></div></div>`;
+                html += `<div class="flex flex-col border-t border-white/5">`;
+                stream.forEach((e, i) => html += createStreamRow(e, i + 4));
+                html += `</div>`;
             }
 
+            container.innerHTML = html;
+            
+            // Update Stats in Header
+            updateGlobalStats();
             lucide.createIcons();
+        }
+
+        function updateGlobalStats() {
+            document.getElementById('stat-count').innerText = entries.length;
+            const totalVotes = entries.reduce((a,b) => a + (b.votes || 0), 0);
+            document.getElementById('stat-votes').innerText = totalVotes.toLocaleString();
         }
 
         // --- COMPONENTS ---
@@ -485,7 +560,7 @@
             const score = parseFloat(e.score).toFixed(1);
             const hasVoted = userVotes[e.id] !== undefined;
             return `
-            <div class="apex-card relative w-full h-[550px] md:h-[650px] rounded-lg group entry-item bg-[#050505]" style="animation-delay: 0ms">
+            <div class="apex-card relative w-full h-[550px] md:h-[650px] rounded-2xl group entry-item bg-[#050505]" style="animation-delay: 0ms">
                 <div class="holo-border"></div>
                 
                 <div class="absolute inset-0 z-0">
@@ -495,21 +570,21 @@
                 
                 <div class="absolute top-8 left-8 z-20 flex flex-col gap-2">
                     <div class="flex items-center gap-3">
-                        <div class="w-12 h-12 bg-gold text-black font-display font-bold text-2xl flex items-center justify-center shadow-[0_0_30px_#FFD700]">#1</div>
-                        <div class="bg-black/60 backdrop-blur border border-gold/30 px-3 py-1 text-[9px] font-mono uppercase tracking-widest text-gold">Current Apex</div>
+                        <div class="w-12 h-12 bg-gold text-black font-display font-bold text-2xl flex items-center justify-center shadow-[0_0_30px_#FFD700] rounded">#1</div>
+                        <div class="bg-black/60 backdrop-blur border border-gold/30 px-3 py-1 text-[9px] font-mono uppercase tracking-widest text-gold rounded-full">Current Apex</div>
                     </div>
                 </div>
 
                 <div class="absolute bottom-0 left-0 w-full p-8 md:p-12 z-20 flex flex-col md:flex-row justify-between items-end gap-8">
                     <div class="flex-1">
-                        <span class="text-[10px] font-bold bg-white/10 backdrop-blur border border-white/10 text-white px-2 py-1 uppercase tracking-widest mb-4 inline-block">${e.section}</span>
+                        <span class="text-[10px] font-bold bg-white/10 backdrop-blur border border-white/10 text-white px-3 py-1.5 rounded uppercase tracking-widest mb-4 inline-block">${e.section}</span>
                         <h2 class="font-display text-5xl md:text-8xl text-white leading-none mb-2 drop-shadow-2xl">${e.name}</h2>
                         <p class="font-serif italic text-white/70 text-lg border-l-2 border-gold pl-4">${e.theme || 'Unknown Theme'}</p>
                     </div>
 
                     <div class="flex items-center gap-8">
                         <div class="text-right hidden md:block">
-                            <span class="block text-gold font-display text-7xl leading-none tracking-tighter">${score}</span>
+                            <span class="block text-gold font-display text-7xl leading-none tracking-tighter drop-shadow-[0_0_15px_rgba(255,215,0,0.5)]">${score}</span>
                             <span class="text-[9px] font-mono text-white/40 uppercase tracking-[0.2em]">Score Index</span>
                         </div>
                         <button onclick="openVoteModal('${e.id}', '${e.section}')" class="w-20 h-20 rounded-full border border-white/20 bg-white/5 backdrop-blur hover:bg-white hover:text-black transition-all flex items-center justify-center group/btn ${hasVoted ? 'bg-white text-black' : ''}">
@@ -524,19 +599,24 @@
             const score = parseFloat(e.score).toFixed(1);
             const color = rank === 2 ? 'silver' : 'bronze';
             const hasVoted = userVotes[e.id] !== undefined;
+            const borderClass = rank === 2 ? 'border-gray-300/20' : 'border-orange-700/20';
+            
             return `
-            <div class="relative h-[450px] rounded border border-white/10 overflow-hidden group entry-item bg-[#080808]" style="animation-delay: ${rank * 100}ms">
+            <div class="relative h-[450px] rounded-2xl border ${borderClass} overflow-hidden group entry-item bg-[#080808]" style="animation-delay: ${rank * 100}ms">
                 <img src="${e.image_url}" class="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-all duration-700 scale-100 group-hover:scale-110">
                 <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
                 
-                <div class="absolute top-4 left-4 w-10 h-10 bg-${color} text-black font-display font-bold text-xl flex items-center justify-center shadow-lg">#${rank}</div>
+                <div class="absolute top-4 left-4 w-10 h-10 bg-${color} text-black font-display font-bold text-xl flex items-center justify-center shadow-lg rounded">#${rank}</div>
                 
                 <div class="absolute bottom-6 left-6 right-6">
                     <h3 class="font-display text-3xl text-white mb-2 leading-none">${e.name}</h3>
-                    <div class="flex justify-between items-end border-t border-white/20 pt-4">
-                        <span class="font-mono text-2xl text-${color}">${score}</span>
-                        <button onclick="openVoteModal('${e.id}', '${e.section}')" class="text-[10px] font-bold uppercase tracking-widest hover:text-${color} transition-colors ${hasVoted ? 'text-green-500' : 'text-white/50'}">
-                            ${hasVoted ? 'Evaluated' : 'Access Vote ->'}
+                    <div class="flex justify-between items-end border-t border-white/10 pt-4">
+                        <div class="flex flex-col">
+                            <span class="text-[9px] text-white/40 font-mono uppercase">Score</span>
+                            <span class="font-mono text-2xl text-${color}">${score}</span>
+                        </div>
+                        <button onclick="openVoteModal('${e.id}', '${e.section}')" class="text-[10px] font-bold uppercase tracking-widest hover:text-${color} transition-colors ${hasVoted ? 'text-green-500' : 'text-white/50'} flex items-center gap-2">
+                            ${hasVoted ? 'Evaluated' : 'Access Vote'} <i data-lucide="${hasVoted ? 'check' : 'arrow-right'}" class="w-3 h-3"></i>
                         </button>
                     </div>
                 </div>
@@ -550,13 +630,13 @@
             <div class="data-row group entry-item cursor-pointer" onclick="openVoteModal('${e.id}', '${e.section}')" style="animation-delay: ${(rank-2) * 50}ms">
                 <div class="font-mono text-white/20 text-xs">#${rank < 10 ? '0'+rank : rank}</div>
                 
-                <div class="data-row-img w-12 h-12 bg-white/5 overflow-hidden border border-white/5 relative grayscale group-hover:grayscale-0 transition-all">
+                <div class="data-row-img w-12 h-12 bg-white/5 overflow-hidden border border-white/5 relative grayscale group-hover:grayscale-0 transition-all rounded">
                     <img src="${e.image_url}" class="w-full h-full object-cover">
                 </div>
                 
                 <div class="data-row-meta pl-4">
                     <h4 class="font-display text-lg text-white group-hover:text-accent-a transition-colors truncate">${e.name}</h4>
-                    <p class="text-[9px] text-white/30 font-mono uppercase tracking-widest hidden md:block">${e.theme || 'Restricted'}</p>
+                    <p class="text-[9px] text-white/30 font-mono uppercase tracking-widest hidden md:block">${e.theme || 'Restricted Data'}</p>
                 </div>
 
                 <div class="data-row-score font-mono text-white font-bold text-right pr-4 text-sm">${score}</div>
@@ -606,18 +686,18 @@
                 const handle = meta.username ? `@${meta.username}` : 'UNK_USER';
                 
                 ui.innerHTML = `
-                <div class="flex items-center gap-4 bg-white/5 pl-4 pr-1 py-1 rounded-full border border-white/5">
+                <div class="flex items-center gap-4 bg-white/5 pl-4 pr-1 py-1 rounded-full border border-white/10 shadow-lg">
                     <div class="flex flex-col items-end">
                         <span class="text-[10px] font-bold text-white uppercase leading-none">${meta.name || 'Agent'}</span>
                         <span class="text-[8px] font-mono text-white/40">${handle}</span>
                     </div>
-                    <button onclick="logout()" class="w-8 h-8 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all">
+                    <button onclick="logout()" class="w-8 h-8 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all border border-transparent hover:border-red-400">
                         <i data-lucide="power" class="w-3 h-3"></i>
                     </button>
                 </div>`;
             } else {
                 ui.innerHTML = `
-                <button onclick="toggleAuthModal()" class="flex items-center gap-2 text-[10px] font-bold uppercase border border-white/20 px-4 py-2 rounded-full hover:bg-white hover:text-black transition-all group">
+                <button onclick="toggleAuthModal()" class="flex items-center gap-2 text-[10px] font-bold uppercase border border-white/20 px-4 py-2 rounded-full hover:bg-white hover:text-black transition-all group backdrop-blur-md">
                     <span>Connect ID</span>
                     <i data-lucide="arrow-right" class="w-3 h-3 group-hover:translate-x-1 transition-transform"></i>
                 </button>`;
@@ -628,7 +708,7 @@
         function toggleAuthModal() {
             const m = document.getElementById('auth-modal');
             m.classList.toggle('hidden');
-            switchAuthMode('login'); // Reset to login by default
+            switchAuthMode('login'); 
         }
 
         async function logout() {
@@ -671,14 +751,13 @@
             }
 
             msg.innerText = "CREATING IDENTITY...";
-            // SignUp with Meta Data
             const { data, error } = await supabaseClient.auth.signUp({ 
                 email, 
                 password,
                 options: {
                     data: {
                         name: name,
-                        username: username.replace('@','') // Clean handle
+                        username: username.replace('@','')
                     }
                 }
             });
@@ -693,26 +772,37 @@
             }
         });
 
-        // --- VOTE & FILTER LOGIC (Existing) ---
+        // --- VOTE & FILTER LOGIC ---
         function filterBy(sec) {
+            currentFilter = sec;
             document.querySelectorAll('.nav-btn').forEach(b => {
                 b.classList.remove('active', 'text-black', 'bg-white');
                 b.classList.add('text-white/50');
+                if(b.textContent.includes(sec.replace('Section ','')) || (sec==='all' && b.textContent==='All')) {
+                    b.classList.add('active', 'text-black', 'bg-white');
+                    b.classList.remove('text-white/50');
+                }
             });
-            event.target.classList.add('active', 'text-black', 'bg-white');
-            event.target.classList.remove('text-white/50');
-            if (sec === 'all') renderView(entries);
-            else renderView(entries.filter(e => e.section === sec));
+            
+            // Re-render
+            const filtered = filterEntries(entries);
+            renderView(filtered);
         }
 
         function openVoteModal(id, section) {
             if(!currentUser) { toggleAuthModal(); return; }
             activeEntryId = id;
             const entry = entries.find(e => e.id === id);
+            
             document.getElementById('vote-name').innerText = entry.name;
             document.getElementById('vote-theme').innerText = entry.theme || 'Unknown';
             document.getElementById('vote-img-bg').style.backgroundImage = `url('${entry.image_url}')`;
             
+            // Reset slider to user's previous vote OR default to 50
+            const prevVote = userVotes[id] || 50;
+            slider.value = prevVote;
+            updateSliderVisuals(prevVote);
+
             const tag = document.getElementById('vote-sec-tag');
             tag.innerText = section;
             let color = '#3B82F6';
@@ -742,8 +832,9 @@
         }
 
         const slider = document.getElementById('vote-slider');
-        slider.addEventListener('input', (e) => {
-            const val = e.target.value;
+        slider.addEventListener('input', (e) => updateSliderVisuals(e.target.value));
+
+        function updateSliderVisuals(val) {
             document.getElementById('score-val').innerText = val;
             document.getElementById('slider-thumb').style.left = `${val}%`;
             document.getElementById('slider-track').style.width = `${val}%`;
@@ -755,29 +846,73 @@
             
             const txtEl = document.getElementById('score-text');
             txtEl.innerText = text;
-            txtEl.className = `font-mono text-xs uppercase tracking-[0.4em] ${color}`;
-        });
+            txtEl.className = `font-mono text-xs uppercase tracking-[0.4em] ${color} block mt-2`;
+        }
 
         async function submitVote() {
             const score = parseInt(slider.value);
             const btn = document.getElementById('submit-btn');
-            btn.innerHTML = `<span class="animate-pulse">Transmitting...</span>`;
+            const originalBtnContent = btn.innerHTML;
             
-            const { error } = await supabaseClient.from('user_votes').insert({ user_id: currentUser.id, entry_id: activeEntryId, score });
+            btn.innerHTML = `<span class="animate-pulse">Transmitting Data...</span>`;
+            
+            // 1. Optimistic Update (Client Side)
+            const previousScore = userVotes[activeEntryId];
+            userVotes[activeEntryId] = score; // Update local vote tracking
+            
+            // Find the entry in the local list
+            const entryIndex = entries.findIndex(e => e.id === activeEntryId);
+            if(entryIndex !== -1) {
+                const entry = entries[entryIndex];
+                
+                // Calculate new stats locally
+                let newTotalScore, newCount;
+                if (previousScore !== undefined) {
+                    // Update existing vote
+                    const oldTotal = entry.score * entry.votes;
+                    newTotalScore = oldTotal - previousScore + score;
+                    newCount = entry.votes; // Count stays same
+                } else {
+                    // New vote
+                    const oldTotal = entry.score * entry.votes;
+                    newTotalScore = oldTotal + score;
+                    newCount = entry.votes + 1;
+                }
+                
+                // Avoid division by zero
+                entry.score = newCount > 0 ? newTotalScore / newCount : 0;
+                entry.votes = newCount;
+                
+                // Sort entries again because rank might have changed
+                entries.sort((a,b) => b.score - a.score);
+                
+                // Re-render immediately
+                renderView(filterEntries(entries));
+            }
+
+            // 2. Server Update
+            // Using UPSERT to handle both new votes and updates to existing votes
+            const { error } = await supabaseClient
+                .from('user_votes')
+                .upsert({ 
+                    user_id: currentUser.id, 
+                    entry_id: activeEntryId, 
+                    score: score 
+                }, { onConflict: 'user_id, entry_id' }); // Requires Unique Constraint in DB
             
             if(error) {
-                showToast(error.message);
-                btn.innerText = "Error";
+                showToast("Error: " + error.message);
+                btn.innerHTML = "Transmission Failed";
+                // Revert optimistic update if needed, but for now we let the next fetch fix it
+                setTimeout(() => btn.innerHTML = originalBtnContent, 2000);
             } else {
-                userVotes[activeEntryId] = score;
-                if(score > 85) confetti({ particleCount: 150, spread: 80, origin: { x: 1 } });
+                if(score > 85) confetti({ particleCount: 150, spread: 80, origin: { x: 1 }, colors: ['#FFD700', '#ffffff'] });
                 showToast("Evaluation Logged");
                 closeVoteModal();
-                btn.innerHTML = `<span class="relative z-10">Confirm Evaluation</span><div class="absolute inset-0 bg-gray-200 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300 z-0"></div>`;
-                document.querySelectorAll(`[onclick="openVoteModal('${activeEntryId}', '${entries.find(e=>e.id===activeEntryId).section}')"]`).forEach(b => {
-                    // Update checkmark visual
-                });
-                renderView(entries); // Refresh view
+                btn.innerHTML = originalBtnContent;
+                
+                // Trigger a real fetch in background to ensure sync
+                setTimeout(() => fetchEntries(true), 1000);
             }
         }
 
@@ -789,26 +924,50 @@
         }
 
         // --- DATA FETCHING ---
-        function fetchEntries() {
-            return supabaseClient.from('entries').select(`*, ranking_stats ( average_score, count )`).then(({ data }) => {
-                if(data) {
-                    entries = data.map(e => ({
+        async function fetchEntries(silent = false) {
+            // Join ranking_stats table
+            const { data, error } = await supabaseClient
+                .from('entries')
+                .select(`
+                    *,
+                    ranking_stats ( average_score, count )
+                `);
+                
+            if(data) {
+                entries = data.map(e => {
+                    // Handle the nested data safely
+                    const stats = Array.isArray(e.ranking_stats) ? e.ranking_stats[0] : e.ranking_stats;
+                    return {
                         ...e,
-                        score: e.ranking_stats?.[0]?.average_score || 0,
-                        votes: e.ranking_stats?.[0]?.count || 0
-                    })).sort((a,b) => b.score - a.score);
-                }
-            });
+                        score: stats ? stats.average_score : 0,
+                        votes: stats ? stats.count : 0
+                    };
+                }).sort((a,b) => b.score - a.score);
+                
+                if(!silent && currentFilter === 'all') renderView(entries);
+                else if(!silent) renderView(filterEntries(entries));
+            }
+            if(error) console.error("Fetch Error", error);
         }
+
         function fetchUserVotes() {
-            return supabaseClient.from('user_votes').select('entry_id, score').eq('user_id', currentUser.id).then(({ data }) => {
-                if(data) data.forEach(v => userVotes[v.entry_id] = v.score);
-            });
+            return supabaseClient
+                .from('user_votes')
+                .select('entry_id, score')
+                .eq('user_id', currentUser.id)
+                .then(({ data }) => {
+                    if(data) data.forEach(v => userVotes[v.entry_id] = v.score);
+                });
         }
+
         function setupRealtime() {
             supabaseClient.channel('public:ranking_stats')
-                .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'ranking_stats' }, () => {
-                    fetchEntries().then(() => renderView(entries));
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'ranking_stats' }, (payload) => {
+                    console.log('Realtime update:', payload);
+                    fetchEntries(true).then(() => {
+                        // Re-render with current filter
+                        renderView(filterEntries(entries));
+                    });
                 }).subscribe();
         }
     </script>
