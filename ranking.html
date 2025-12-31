@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sakura Rankings | ULAB HSC 26</title>
+    <title>The Nexus | ULAB HSC 26</title>
     
-    <!-- FONTS -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;600;700&family=Quicksand:wght@300;400;600&family=Tiro+Bangla:ital@0;1&display=swap" rel="stylesheet">
+    <!-- FONTS: Merging Section A, B, H fonts -->
+    <link href="https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=Cormorant+Garamond:ital,wght@0,400;1,400&family=Space+Grotesk:wght@300;500&display=swap" rel="stylesheet">
     
     <!-- LIBRARIES -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -21,18 +20,20 @@
             theme: {
                 extend: {
                     colors: {
-                        'sakura-pink': '#FFB7C5',
-                        'sakura-light': '#FFF0F5',
-                        'sakura-dark': '#FF9EAE',
-                        'bark': '#5D4037',
-                        'leaf': '#98B4A6',
+                        void: '#050505',
+                        paper: '#e8e6e1',
+                        'sec-a': '#3b82f6', /* The Deep Blue */
+                        'sec-b': '#d4af37', /* Archive Gold */
+                        'sec-h': '#74c69d', /* Chronicle Green */
                     },
                     fontFamily: {
-                        'hand': ['Dancing Script', 'cursive'],
-                        'body': ['Quicksand', 'sans-serif'],
+                        display: ['Clash Display', 'sans-serif'],
+                        header: ['Cinzel', 'serif'],
+                        body: ['Space Grotesk', 'monospace'],
+                        serif: ['Cormorant Garamond', 'serif'],
                     },
                     backgroundImage: {
-                        'gradient-sakura': 'linear-gradient(to bottom, #FFF0F5 0%, #FFDEE9 100%)',
+                        'gradient-void': 'radial-gradient(circle at center, #1a1a1a 0%, #050505 100%)',
                     }
                 }
             }
@@ -41,207 +42,206 @@
 
     <style>
         body {
-            background: linear-gradient(to bottom, #FFF5F7, #FFE4E1);
-            color: #5D4037;
-            font-family: 'Quicksand', sans-serif;
+            background-color: #050505;
+            color: #e8e6e1;
+            font-family: 'Space Grotesk', monospace;
             overflow-x: hidden;
             min-height: 100vh;
         }
 
-        /* --- SAKURA AESTHETICS --- */
-        .petal {
-            position: fixed;
-            background: #FFC0CB;
-            border-radius: 100% 0 100% 0;
-            z-index: 0;
-            pointer-events: none;
-            box-shadow: 1px 1px 2px rgba(0,0,0,0.05);
+        /* --- ATMOSPHERE --- */
+        .noise-overlay {
+            position: fixed; inset: 0; z-index: 0; opacity: 0.03; pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+        
+        .vignette {
+            position: fixed; inset: 0; z-index: 1; pointer-events: none;
+            background: radial-gradient(circle at center, transparent 40%, #050505 100%);
         }
 
-        .dream-frame {
-            position: relative;
-            background: rgba(255, 255, 255, 0.6);
-            backdrop-filter: blur(8px);
-            padding: 12px;
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.9);
-            box-shadow: 0 10px 30px -5px rgba(255, 183, 197, 0.5);
-            transition: all 0.4s ease;
-            overflow: hidden;
-        }
-        .dream-frame:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 40px -5px rgba(255, 183, 197, 0.8);
-            background: rgba(255, 255, 255, 0.8);
+        /* --- CARDS --- */
+        .nexus-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+            transform-style: preserve-3d;
         }
 
-        .dream-image {
-            width: 100%;
-            aspect-ratio: 3/4;
-            object-fit: cover;
-            border-radius: 12px;
-            transition: transform 1.2s ease;
+        /* Section Specific Glows */
+        .nexus-card[data-section="Section A"]:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.2);
         }
-        .dream-frame:hover .dream-image {
+        .nexus-card[data-section="Section B"]:hover {
+            border-color: #d4af37;
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.2);
+        }
+        .nexus-card[data-section="Section H"]:hover {
+            border-color: #74c69d;
+            box-shadow: 0 0 30px rgba(116, 198, 157, 0.2);
+        }
+
+        .card-image {
+            filter: grayscale(100%) contrast(1.2);
+            transition: all 0.5s ease;
+        }
+        .nexus-card:hover .card-image {
+            filter: grayscale(0%) contrast(1);
             transform: scale(1.05);
         }
 
         /* --- UI ELEMENTS --- */
         .glass-nav {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+            background: rgba(5, 5, 5, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .btn-sakura {
-            background: #FFF0F5;
-            color: #5D4037;
-            border: 1px solid #FFB7C5;
+        .filter-btn {
+            position: relative;
+            overflow: hidden;
             transition: all 0.3s ease;
         }
-        .btn-sakura:hover {
-            background: #FFB7C5;
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(255, 183, 197, 0.6);
+        .filter-btn.active {
+            background: #fff;
+            color: #050505;
+            border-color: #fff;
         }
 
-        .btn-vote {
-            background: linear-gradient(135deg, #FFB7C5 0%, #FF9EAE 100%);
-            color: white;
-            font-weight: bold;
-            box-shadow: 0 4px 15px rgba(255, 158, 174, 0.4);
-        }
-        .btn-vote:hover {
-            transform: scale(1.05);
-            box-shadow: 0 6px 20px rgba(255, 158, 174, 0.6);
-        }
-
-        /* --- MODAL --- */
-        .modal-overlay {
-            background: rgba(93, 64, 55, 0.2);
-            backdrop-filter: blur(5px);
-        }
-        
-        /* Slider Styling */
+        /* --- SLIDER --- */
         input[type=range] {
             -webkit-appearance: none; width: 100%; background: transparent;
         }
         input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none; height: 24px; width: 24px; 
-            border-radius: 50%; background: #FF9EAE; cursor: pointer; 
-            margin-top: -10px; box-shadow: 0 0 10px rgba(255, 158, 174, 0.8);
-            border: 2px solid white;
+            -webkit-appearance: none; height: 20px; width: 20px; 
+            border-radius: 50%; background: #fff; cursor: pointer; 
+            margin-top: -8px; 
+            box-shadow: 0 0 10px rgba(255,255,255,0.5);
         }
         input[type=range]::-webkit-slider-runnable-track {
-            width: 100%; height: 6px; cursor: pointer; 
-            background: #FFF0F5; border-radius: 10px; border: 1px solid #FFB7C5;
+            width: 100%; height: 4px; cursor: pointer; 
+            background: rgba(255,255,255,0.2); border-radius: 2px;
         }
     </style>
 </head>
-<body>
+<body class="selection:bg-white selection:text-void">
 
-    <!-- BACKGROUND ANIMATION -->
-    <div id="petals-container"></div>
+    <div class="noise-overlay"></div>
+    <div class="vignette"></div>
 
     <!-- NAVBAR -->
     <nav class="fixed top-0 w-full z-40 glass-nav px-6 py-4 flex justify-between items-center">
-        <div class="flex items-center gap-2">
-            <span class="text-2xl">🌸</span>
-            <span class="font-hand text-2xl font-bold text-bark">Design Wars</span>
+        <div class="flex items-center gap-3">
+            <div class="flex gap-1">
+                <div class="w-2 h-2 rounded-full bg-sec-a animate-pulse"></div>
+                <div class="w-2 h-2 rounded-full bg-sec-b animate-pulse" style="animation-delay: 0.1s"></div>
+                <div class="w-2 h-2 rounded-full bg-sec-h animate-pulse" style="animation-delay: 0.2s"></div>
+            </div>
+            <span class="font-display font-bold text-lg tracking-widest text-white">NEXUS</span>
         </div>
         <div id="auth-ui" class="flex items-center gap-4">
-            <button onclick="toggleAuthModal()" class="text-xs font-bold tracking-widest text-bark uppercase hover:text-sakura-dark transition">Login</button>
+            <button onclick="toggleAuthModal()" class="text-xs font-mono tracking-widest text-white/60 hover:text-white uppercase transition-colors">[ Login ]</button>
         </div>
     </nav>
 
     <!-- HEADER -->
-    <header class="pt-32 pb-16 text-center px-4 relative">
-        <h1 class="font-hand text-6xl md:text-8xl text-bark mb-4 drop-shadow-sm">Global Ranking</h1>
-        <div class="w-24 h-1 bg-sakura-pink mx-auto rounded-full mb-6"></div>
-        <p class="font-body text-bark/70 text-sm md:text-base max-w-lg mx-auto leading-relaxed">
-            Vote for the most beautiful portfolios. 
-            <br>Rankings are based on average aesthetic score.
-        </p>
+    <header class="pt-32 pb-16 text-center px-4 relative z-10">
+        <p class="font-mono text-xs text-white/40 tracking-[0.5em] uppercase mb-4">The Convergence Point</p>
+        <h1 class="font-display text-5xl md:text-8xl text-white mb-6 tracking-tighter mix-blend-screen">
+            GLOBAL RANKING
+        </h1>
+        <div class="w-px h-16 bg-gradient-to-b from-white to-transparent mx-auto mb-8"></div>
     </header>
 
     <!-- MAIN CONTENT -->
-    <main class="max-w-7xl mx-auto px-6 pb-24">
+    <main class="max-w-7xl mx-auto px-6 pb-24 relative z-10">
         
         <!-- Filters -->
         <div class="flex justify-center flex-wrap gap-4 mb-16">
-            <button onclick="filterBy('all')" class="filter-btn active btn-sakura px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest">All</button>
-            <button onclick="filterBy('Section A')" class="filter-btn btn-sakura px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest">Sec A</button>
-            <button onclick="filterBy('Section B')" class="filter-btn btn-sakura px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest">Sec B</button>
-            <button onclick="filterBy('Section H')" class="filter-btn btn-sakura px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest">Sec H</button>
+            <button onclick="filterBy('all')" class="filter-btn active border border-white/20 px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest text-white/60 hover:text-white">All Sectors</button>
+            <button onclick="filterBy('Section A')" class="filter-btn border border-sec-a/50 px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest text-sec-a hover:bg-sec-a hover:text-white">Sec A: Deep</button>
+            <button onclick="filterBy('Section B')" class="filter-btn border border-sec-b/50 px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest text-sec-b hover:bg-sec-b hover:text-white">Sec B: Archive</button>
+            <button onclick="filterBy('Section H')" class="filter-btn border border-sec-h/50 px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest text-sec-h hover:bg-sec-h hover:text-white">Sec H: Terra</button>
         </div>
 
         <!-- GRID -->
-        <div id="ranking-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+        <div id="ranking-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             <!-- Loading State -->
-            <div class="col-span-full text-center py-20">
-                <div class="inline-block animate-spin text-4xl mb-4">🌸</div>
-                <p class="font-hand text-2xl text-bark/60">Gathering Petals...</p>
+            <div class="col-span-full text-center py-20 flex flex-col items-center">
+                <div class="w-12 h-12 border-2 border-white/20 border-t-white rounded-full animate-spin mb-4"></div>
+                <p class="font-mono text-sm text-white/40 uppercase tracking-widest">Synchronizing Database...</p>
             </div>
         </div>
 
     </main>
 
-    <!-- VOTE MODAL (Sakura Themed) -->
-    <div id="vote-modal" class="modal-overlay fixed inset-0 z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white/90 backdrop-blur-xl border border-white p-8 rounded-3xl w-full max-w-md relative shadow-[0_20px_60px_-15px_rgba(255,183,197,0.6)] transform scale-95 opacity-0 transition-all duration-300" id="vote-modal-content">
-            
-            <button onclick="closeVoteModal()" class="absolute top-4 right-6 text-sakura-dark hover:text-bark text-2xl font-hand">✕</button>
-            
-            <div class="text-center mb-8">
-                <div id="vote-img" class="w-24 h-24 rounded-full bg-sakura-light mx-auto mb-4 bg-cover bg-center border-4 border-white shadow-lg"></div>
-                <h2 class="font-hand text-4xl text-bark" id="vote-name">Student Name</h2>
-                <p class="font-body text-sakura-dark text-sm uppercase tracking-widest mt-1" id="vote-theme">Theme Name</p>
-            </div>
+    <!-- VOTE MODAL -->
+    <div id="vote-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-void/90 backdrop-blur-md" onclick="closeVoteModal()"></div>
+        
+        <div class="bg-[#0a0a0a] border border-white/10 p-1 w-full max-w-md relative transform scale-95 opacity-0 transition-all duration-300" id="vote-modal-content">
+            <div class="p-8 border border-white/5 relative overflow-hidden">
+                
+                <!-- Dynamic Background Glow -->
+                <div id="modal-glow" class="absolute top-0 right-0 w-64 h-64 bg-white/5 blur-[80px] rounded-full pointer-events-none transition-colors duration-500"></div>
 
-            <div class="mb-8 px-4">
-                <div class="flex justify-between items-end mb-4">
-                    <label class="text-xs text-bark/50 font-bold uppercase tracking-widest">Aesthetic Score</label>
-                    <span id="score-display" class="font-hand text-5xl text-sakura-dark">50</span>
+                <button onclick="closeVoteModal()" class="absolute top-4 right-4 text-white/40 hover:text-white font-mono text-xl">✕</button>
+                
+                <div class="flex items-start gap-6 mb-8 relative z-10">
+                    <div id="vote-img" class="w-20 h-24 bg-cover bg-center border border-white/20 grayscale"></div>
+                    <div>
+                        <span id="vote-section" class="text-[10px] font-mono border border-white/20 px-2 py-1 rounded text-white/60 uppercase">SEC ?</span>
+                        <h2 class="font-display text-3xl text-white mt-2 leading-none" id="vote-name">Student Name</h2>
+                        <p class="font-serif italic text-white/50 text-sm mt-1" id="vote-theme">Theme Name</p>
+                    </div>
                 </div>
-                <input type="range" id="score-slider" min="1" max="100" value="50" class="mb-2">
-                <div class="flex justify-between text-[10px] text-bark/40 font-bold uppercase">
-                    <span>Nice</span>
-                    <span>Beautiful</span>
-                    <span>Divine</span>
-                </div>
-            </div>
 
-            <div class="flex gap-3">
-                <button onclick="submitVote()" id="confirm-vote-btn" class="flex-1 btn-vote py-3 rounded-xl text-sm uppercase tracking-widest shadow-lg">
-                    Submit Vote
+                <div class="mb-8 relative z-10">
+                    <div class="flex justify-between items-end mb-4">
+                        <label class="text-xs text-white/40 font-mono uppercase tracking-widest">Aesthetic Score</label>
+                        <span id="score-display" class="font-display text-5xl text-white">50</span>
+                    </div>
+                    <input type="range" id="score-slider" min="1" max="100" value="50" class="mb-2 w-full">
+                    <div class="flex justify-between text-[10px] text-white/20 font-mono uppercase">
+                        <span>Standard</span>
+                        <span>Exceptional</span>
+                        <span>Legendary</span>
+                    </div>
+                </div>
+
+                <button onclick="submitVote()" id="confirm-vote-btn" class="w-full py-4 bg-white text-black font-bold font-mono uppercase tracking-widest hover:bg-gray-200 transition-colors relative z-10">
+                    Transmit Data
                 </button>
             </div>
         </div>
     </div>
 
     <!-- AUTH MODAL -->
-    <div id="auth-modal" class="modal-overlay fixed inset-0 z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white/95 border border-white p-8 rounded-3xl w-full max-w-sm relative shadow-2xl">
-            <button onclick="toggleAuthModal()" class="absolute top-4 right-4 text-bark/50 hover:text-bark">✕</button>
-            <h2 class="font-hand text-3xl text-bark mb-6 text-center">Verify Identity</h2>
+    <div id="auth-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-void/90 backdrop-blur-md" onclick="toggleAuthModal()"></div>
+        <div class="bg-[#0a0a0a] border border-white/10 p-8 w-full max-w-sm relative shadow-2xl">
+            <button onclick="toggleAuthModal()" class="absolute top-4 right-4 text-white/30 hover:text-white">✕</button>
+            <h2 class="font-display text-2xl text-white mb-6 text-center uppercase tracking-widest">Identify</h2>
             
             <form id="auth-form" class="flex flex-col gap-4">
-                <input type="email" id="email" placeholder="Email" class="bg-sakura-light border border-sakura-pink/30 p-4 rounded-xl text-bark text-sm focus:outline-none focus:border-sakura-dark">
-                <input type="password" id="password" placeholder="Password" class="bg-sakura-light border border-sakura-pink/30 p-4 rounded-xl text-bark text-sm focus:outline-none focus:border-sakura-dark">
-                <button type="submit" class="btn-vote py-3 rounded-xl text-sm font-bold uppercase tracking-widest">
-                    Enter Garden
+                <input type="email" id="email" placeholder="Email" class="bg-white/5 border border-white/10 p-4 text-white text-sm font-mono focus:outline-none focus:border-white/50 placeholder-white/20">
+                <input type="password" id="password" placeholder="Password" class="bg-white/5 border border-white/10 p-4 text-white text-sm font-mono focus:outline-none focus:border-white/50 placeholder-white/20">
+                <button type="submit" class="bg-white text-black py-3 text-sm font-bold font-mono uppercase tracking-widest hover:bg-gray-200">
+                    Connect
                 </button>
             </form>
-            <div id="auth-msg" class="text-center text-xs mt-4 text-sakura-dark"></div>
+            <div id="auth-msg" class="text-center text-xs mt-4 text-white/50 font-mono"></div>
         </div>
     </div>
 
     <script>
-        // --- SUPABASE SETUP ---
-        // PLEASE REPLACE WITH YOUR PROJECT URL AND ANON KEY
-        const SUPABASE_URL = 'YOUR_SUPABASE_URL';
-        const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY';
+        // --- CONFIG ---
+        // Using provided keys for functionality. 
+        // In a real public deployment, ensure RLS policies on Supabase are strictly set.
+        const SUPABASE_URL = 'https://puguoqviaogqcsjrdkbk.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB1Z3VvcXZpYW9ncWNzanJka2JrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcxMjQ4NTgsImV4cCI6MjA4MjcwMDg1OH0.D7W_uNWY1FpjKtPh7CkBOQNEhyQnYIcZIsFa1LhouPw';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // --- STATE ---
@@ -256,34 +256,14 @@
             await fetchEntries();
             if(currentUser) await fetchUserVotes();
             renderEntries(entries);
-
-            // Petals
-            setInterval(createPetal, 300);
             
-            // Realtime
+            // Realtime updates
             supabase.channel('public:ranking_stats')
                 .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'ranking_stats' }, payload => {
-                    updateEntryScore(payload.new);
+                    // Optimistic update or refetch
+                    fetchEntries().then(() => renderEntries(entries)); 
                 })
                 .subscribe();
-        }
-
-        // --- VISUALS ---
-        function createPetal() {
-            const container = document.getElementById('petals-container');
-            const petal = document.createElement('div');
-            petal.classList.add('petal');
-            const size = Math.random() * 10 + 5;
-            petal.style.width = `${size}px`; petal.style.height = `${size}px`;
-            petal.style.left = `${Math.random() * 100}vw`; petal.style.top = `-20px`;
-            petal.style.background = ['#FFB7C5', '#FFC0CB', '#FFF0F5'][Math.floor(Math.random()*3)];
-            container.appendChild(petal);
-
-            gsap.to(petal, {
-                y: '110vh', x: `+=${Math.random() * 100 - 50}`, rotation: Math.random() * 720,
-                duration: Math.random() * 10 + 5, ease: "none",
-                onComplete: () => petal.remove()
-            });
         }
 
         // --- DATA ---
@@ -312,53 +292,114 @@
                 const hasVoted = userVotes[entry.id] !== undefined;
                 const score = parseFloat(entry.score).toFixed(1);
 
-                const card = document.createElement('div');
-                card.className = "dream-frame flex flex-col group";
+                // Determine styling based on section
+                let accentColor = '#ffffff';
+                let sectionLabel = 'UNKNOWN';
                 
-                // Rank Badge
-                const badgeColor = index === 0 ? '#FFD700' : index === 1 ? '#C0C0C0' : index === 2 ? '#CD7F32' : '#FFB7C5';
-                const rankBadge = `<div class="absolute top-4 left-4 z-10 w-8 h-8 rounded-full flex items-center justify-center font-bold text-white shadow-md text-sm" style="background: ${badgeColor}">${index + 1}</div>`;
+                if (entry.section === 'Section A') { accentColor = '#3b82f6'; sectionLabel = 'DEEP'; }
+                else if (entry.section === 'Section B') { accentColor = '#d4af37'; sectionLabel = 'ARCHIVE'; }
+                else if (entry.section === 'Section H') { accentColor = '#74c69d'; sectionLabel = 'TERRA'; }
 
-                // Theme Name Logic (Use placeholder if empty)
-                const themeName = entry.section === 'Section B' && entry.roll === '119' ? 'Sakura Dreams' : (entry.theme_name || 'My Portfolio');
+                const card = document.createElement('div');
+                card.className = "nexus-card p-1 group relative";
+                card.setAttribute('data-section', entry.section);
+                
+                // Rank Badge Color logic
+                const badgeColor = index === 0 ? '#FFD700' : index === 1 ? '#C0C0C0' : index === 2 ? '#CD7F32' : 'rgba(255,255,255,0.1)';
+                
+                const themeName = entry.section === 'Section B' && entry.roll === '119' ? 'Sakura Dreams' : (entry.theme_name || 'Classified');
 
                 card.innerHTML = `
-                    ${rankBadge}
-                    <div class="relative overflow-hidden rounded-xl mb-4">
-                        <img src="${entry.image_url}" class="dream-image" alt="${entry.name}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x400?text=No+Image'">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    </div>
-                    
-                    <div class="text-center flex-grow flex flex-col justify-between">
-                        <div>
-                            <h2 class="font-hand text-3xl text-bark leading-none mb-1">${entry.name}</h2>
-                            <p class="font-body text-xs text-sakura-dark font-bold uppercase tracking-widest mb-4">${themeName}</p>
+                    <div class="h-full bg-[#0a0a0a] border border-white/5 p-4 flex flex-col justify-between relative overflow-hidden">
+                        
+                        <!-- Rank -->
+                        <div class="absolute top-0 left-0 px-3 py-1 font-mono text-xs font-bold text-black z-20" style="background: ${badgeColor}">
+                            #${index + 1}
+                        </div>
+
+                        <!-- Image -->
+                        <div class="relative w-full aspect-[3/4] mb-4 overflow-hidden border border-white/10">
+                            <img src="${entry.image_url}" class="card-image w-full h-full object-cover" alt="${entry.name}" loading="lazy" onerror="this.src='https://placehold.co/300x400/101010/FFF?text=No+Image'">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60"></div>
+                            
+                            <!-- Section Tag -->
+                            <div class="absolute bottom-2 left-2 px-2 py-0.5 border text-[10px] font-mono uppercase tracking-widest bg-black/50 backdrop-blur-sm" style="border-color: ${accentColor}; color: ${accentColor}">
+                                ${sectionLabel}
+                            </div>
                         </div>
                         
-                        <div class="flex items-center justify-between gap-2 mt-2">
-                            <span class="font-hand text-2xl text-bark/60">${score} <span class="text-sm font-body">/ 100</span></span>
+                        <!-- Info -->
+                        <div>
+                            <h2 class="font-display text-2xl text-white leading-none mb-1 group-hover:text-[${accentColor}] transition-colors">${entry.name}</h2>
+                            <p class="font-serif italic text-white/40 text-xs">${themeName}</p>
+                        </div>
+                        
+                        <!-- Stats & Action -->
+                        <div class="flex items-end justify-between mt-4 pt-4 border-t border-white/10">
+                            <div>
+                                <span class="block text-[10px] text-white/30 font-mono uppercase">Avg Score</span>
+                                <span class="font-mono text-xl text-white">${score}</span>
+                            </div>
                             
                             <div class="flex gap-2">
-                                <button onclick="openVoteModal('${entry.id}')" ${hasVoted ? 'disabled' : ''} class="w-10 h-10 rounded-full flex items-center justify-center transition-colors ${hasVoted ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-sakura-light text-sakura-dark hover:bg-sakura-pink hover:text-white'}">
-                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                                <button onclick="openVoteModal('${entry.id}', '${entry.section}')" ${hasVoted ? 'disabled' : ''} class="w-8 h-8 flex items-center justify-center border border-white/20 hover:bg-white hover:text-black transition-all ${hasVoted ? 'opacity-30 cursor-not-allowed' : ''}">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
                                 </button>
-                                <a href="${entry.page_url}" class="px-4 py-2 rounded-full bg-white border border-sakura-pink text-bark text-xs font-bold uppercase tracking-widest hover:bg-sakura-pink hover:text-white transition-colors">
+                                <a href="${entry.page_url}" class="px-3 py-1 flex items-center border border-white/20 text-[10px] font-bold uppercase tracking-widest hover:bg-white hover:text-black transition-colors">
                                     View
                                 </a>
                             </div>
                         </div>
                     </div>
                 `;
+                
+                // Add Tilt Event
+                card.addEventListener('mousemove', handleTilt);
+                card.addEventListener('mouseleave', resetTilt);
+                
                 grid.appendChild(card);
             });
             
-            // Animation for cards
-            gsap.from(".dream-frame", { y: 30, opacity: 0, duration: 0.8, stagger: 0.1, ease: "power2.out" });
+            // GSAP Entrance
+            gsap.from(".nexus-card", { y: 20, opacity: 0, duration: 0.5, stagger: 0.05, ease: "power2.out" });
+        }
+
+        // --- 3D TILT ---
+        function handleTilt(e) {
+            const el = e.currentTarget;
+            const rect = el.getBoundingClientRect();
+            const x = e.clientX - rect.left; 
+            const y = e.clientY - rect.top;
+            
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            
+            const rotateX = ((y - centerY) / centerY) * -5;
+            const rotateY = ((x - centerX) / centerX) * 5;
+
+            gsap.to(el, {
+                transform: `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02)`,
+                duration: 0.2,
+                ease: "power1.out"
+            });
+        }
+        
+        function resetTilt(e) {
+            gsap.to(e.currentTarget, {
+                transform: `perspective(1000px) rotateX(0) rotateY(0) scale(1)`,
+                duration: 0.5,
+                ease: "elastic.out(1, 0.5)"
+            });
         }
 
         function filterBy(sec) {
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('bg-sakura-dark', 'text-white'));
-            event.target.classList.add('bg-sakura-dark', 'text-white');
+            document.querySelectorAll('.filter-btn').forEach(b => {
+                b.classList.remove('active', 'bg-white', 'text-black');
+                b.classList.add('text-white/60');
+            });
+            event.target.classList.remove('text-white/60');
+            event.target.classList.add('active', 'bg-white', 'text-black');
+            
             if(sec === 'all') renderEntries(entries);
             else renderEntries(entries.filter(e => e.section === sec));
         }
@@ -369,8 +410,8 @@
             currentUser = session?.user;
             const ui = document.getElementById('auth-ui');
             ui.innerHTML = currentUser ? 
-                `<span class="text-xs text-bark/60 mr-2">${currentUser.email}</span><button onclick="supabase.auth.signOut().then(()=>location.reload())" class="text-xs text-red-400 hover:text-red-600">Exit</button>` : 
-                `<button onclick="toggleAuthModal()" class="text-xs font-bold tracking-widest text-bark uppercase">Login</button>`;
+                `<span class="text-xs font-mono text-white/40 mr-2">${currentUser.email.split('@')[0]}</span><button onclick="supabase.auth.signOut().then(()=>location.reload())" class="text-xs text-red-400 hover:text-red-300 font-mono">[ EXIT ]</button>` : 
+                `<button onclick="toggleAuthModal()" class="text-xs font-mono tracking-widest text-white/60 hover:text-white uppercase transition-colors">[ Login ]</button>`;
         }
 
         function toggleAuthModal() {
@@ -383,28 +424,46 @@
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const msg = document.getElementById('auth-msg');
-            msg.innerText = "Checking...";
+            msg.innerText = "Authenticating...";
             
             let { error } = await supabase.auth.signInWithPassword({ email, password });
             if (error) {
                 let { error: signUpError } = await supabase.auth.signUp({ email, password });
-                if (signUpError) { msg.innerText = signUpError.message; return; }
-                msg.innerText = "Welcome! Logging in...";
+                if (signUpError) { msg.innerText = "Access Denied: " + signUpError.message; return; }
+                msg.innerText = "New ID Created. Logging in...";
             }
             toggleAuthModal(); window.location.reload();
         });
 
-        function openVoteModal(id) {
+        function openVoteModal(id, section) {
             if(!currentUser) { toggleAuthModal(); return; }
             activeEntryId = id;
             const entry = entries.find(e => e.id === id);
+            
             document.getElementById('vote-name').innerText = entry.name;
-            document.getElementById('vote-theme').innerText = entry.section === 'Section B' && entry.roll === '119' ? 'Sakura Dreams' : (entry.theme_name || 'Design Wars Entry');
+            document.getElementById('vote-theme').innerText = entry.theme_name || 'Unknown Protocol';
             document.getElementById('vote-img').style.backgroundImage = `url('${entry.image_url}')`;
             
+            const sectionEl = document.getElementById('vote-section');
+            const glowEl = document.getElementById('modal-glow');
+            
+            if (section === 'Section A') {
+                sectionEl.innerText = 'SEC A // DEEP';
+                sectionEl.style.borderColor = '#3b82f6'; sectionEl.style.color = '#3b82f6';
+                glowEl.className = "absolute top-0 right-0 w-64 h-64 bg-blue-500/20 blur-[80px] rounded-full pointer-events-none";
+            } else if (section === 'Section B') {
+                sectionEl.innerText = 'SEC B // ARCHIVE';
+                sectionEl.style.borderColor = '#d4af37'; sectionEl.style.color = '#d4af37';
+                glowEl.className = "absolute top-0 right-0 w-64 h-64 bg-yellow-500/20 blur-[80px] rounded-full pointer-events-none";
+            } else {
+                sectionEl.innerText = 'SEC H // TERRA';
+                sectionEl.style.borderColor = '#74c69d'; sectionEl.style.color = '#74c69d';
+                glowEl.className = "absolute top-0 right-0 w-64 h-64 bg-green-500/20 blur-[80px] rounded-full pointer-events-none";
+            }
+
             const m = document.getElementById('vote-modal');
             m.classList.remove('hidden');
-            gsap.to('#vote-modal-content', { scale: 1, opacity: 1, duration: 0.4, ease: "back.out(1.5)" });
+            gsap.to('#vote-modal-content', { scale: 1, opacity: 1, duration: 0.3, ease: "power2.out" });
         }
 
         function closeVoteModal() {
@@ -419,7 +478,7 @@
         async function submitVote() {
             const score = parseInt(document.getElementById('score-slider').value);
             const btn = document.getElementById('confirm-vote-btn');
-            btn.innerText = "Voting..."; btn.disabled = true;
+            btn.innerText = "Transmitting..."; btn.disabled = true;
             
             const { error } = await supabase.from('user_votes').insert({ user_id: currentUser.id, entry_id: activeEntryId, score: score });
             if(error) alert(error.message);
@@ -428,7 +487,7 @@
                 renderEntries(entries);
                 closeVoteModal();
             }
-            btn.innerText = "Submit Vote"; btn.disabled = false;
+            btn.innerText = "Transmit Data"; btn.disabled = false;
         }
 
         init();
