@@ -290,7 +290,8 @@
         const SUPABASE_URL = 'https://puguoqviaogqcsjrdkbk.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB1Z3VvcXZpYW9ncWNzanJka2JrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcxMjQ4NTgsImV4cCI6MjA4MjcwMDg1OH0.D7W_uNWY1FpjKtPh7CkBOQNEhyQnYIcZIsFa1LhouPw';
         
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // Changed to supabaseClient to avoid conflict with library 'supabase' variable
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // STATE
         let appState = {
@@ -306,7 +307,7 @@
             lucide.createIcons();
             
             // Check Session
-            const { data: { session } } = await supabase.auth.getSession();
+            const { data: { session } } = await supabaseClient.auth.getSession();
             if (session) {
                 handleAuthSuccess(session.user);
             } else {
@@ -326,7 +327,7 @@
 
             msg.innerText = "Authenticating...";
             
-            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
 
             if (error) {
                 msg.innerText = error.message;
@@ -338,7 +339,7 @@
         }
 
         async function handleLogout() {
-            await supabase.auth.signOut();
+            await supabaseClient.auth.signOut();
             window.location.reload();
         }
 
@@ -351,7 +352,7 @@
             refreshData();
 
             // Subscribe to Realtime
-            supabase.channel('admin-feed')
+            supabaseClient.channel('admin-feed')
                 .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'user_votes' }, payload => {
                     handleNewVote(payload.new);
                 })
@@ -363,11 +364,11 @@
             setLoading(true);
             try {
                 // 1. Fetch Entries
-                const { data: ent } = await supabase.from('entries').select('*');
+                const { data: ent } = await supabaseClient.from('entries').select('*');
                 appState.entries = ent || [];
 
                 // 2. Fetch Users (From the new VIEW)
-                const { data: usrs, error: userError } = await supabase.from('admin_users_readonly').select('*');
+                const { data: usrs, error: userError } = await supabaseClient.from('admin_users_readonly').select('*');
                 
                 if (usrs) {
                     appState.users = usrs.reduce((acc, u) => {
@@ -379,7 +380,7 @@
                 }
 
                 // 3. Fetch Votes
-                const { data: vts, error: voteError } = await supabase
+                const { data: vts, error: voteError } = await supabaseClient
                     .from('user_votes')
                     .select('*')
                     .order('created_at', { ascending: false });
