@@ -226,10 +226,23 @@
             <h2 class="font-display text-2xl text-white mb-6 text-center uppercase tracking-widest">Identify</h2>
             
             <form id="auth-form" class="flex flex-col gap-4">
-                <input type="email" id="email" placeholder="Email" class="bg-white/5 border border-white/10 p-4 text-white text-sm font-mono focus:outline-none focus:border-white/50 placeholder-white/20">
-                <input type="password" id="password" placeholder="Password" class="bg-white/5 border border-white/10 p-4 text-white text-sm font-mono focus:outline-none focus:border-white/50 placeholder-white/20">
-                <button type="submit" class="bg-white text-black py-3 text-sm font-bold font-mono uppercase tracking-widest hover:bg-gray-200">
-                    Connect
+                <div class="flex flex-col gap-1">
+                     <p class="text-[10px] font-mono text-white/40 uppercase tracking-widest">Full Name (New Users)</p>
+                     <input type="text" id="full_name" placeholder="Enter Full Name" class="bg-white/5 border border-white/10 p-4 text-white text-sm font-mono focus:outline-none focus:border-white/50 placeholder-white/20">
+                </div>
+                <div class="flex flex-col gap-1">
+                     <p class="text-[10px] font-mono text-white/40 uppercase tracking-widest">Username (New Users)</p>
+                     <input type="text" id="username" placeholder="username_only" class="bg-white/5 border border-white/10 p-4 text-white text-sm font-mono focus:outline-none focus:border-white/50 placeholder-white/20">
+                </div>
+                <div class="w-full h-px bg-white/10 my-1"></div>
+                <div class="flex flex-col gap-1">
+                     <p class="text-[10px] font-mono text-white/40 uppercase tracking-widest">Credentials</p>
+                     <input type="email" id="email" placeholder="Email Address" required class="bg-white/5 border border-white/10 p-4 text-white text-sm font-mono focus:outline-none focus:border-white/50 placeholder-white/20">
+                     <input type="password" id="password" placeholder="Password" required class="bg-white/5 border border-white/10 p-4 text-white text-sm font-mono focus:outline-none focus:border-white/50 placeholder-white/20">
+                </div>
+                
+                <button type="submit" class="bg-white text-black py-3 text-sm font-bold font-mono uppercase tracking-widest hover:bg-gray-200 mt-2">
+                    Connect / Register
                 </button>
             </form>
             <div id="auth-msg" class="text-center text-xs mt-4 text-white/50 font-mono"></div>
@@ -239,11 +252,9 @@
     <script>
         // --- CONFIG ---
         // Using provided keys for functionality. 
-        // In a real public deployment, ensure RLS policies on Supabase are strictly set.
         const SUPABASE_URL = 'https://puguoqviaogqcsjrdkbk.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB1Z3VvcXZpYW9ncWNzanJka2JrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcxMjQ4NTgsImV4cCI6MjA4MjcwMDg1OH0.D7W_uNWY1FpjKtPh7CkBOQNEhyQnYIcZIsFa1LhouPw';
         
-        // FIX: Renamed variable to avoid conflict
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // --- STATE ---
@@ -271,7 +282,6 @@
             supabaseClient.channel('public:ranking_stats')
                 .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'ranking_stats' }, payload => {
                     console.log("Realtime update received", payload);
-                    // Optimistic update or refetch
                     fetchEntries().then(() => renderEntries(entries)); 
                 })
                 .subscribe((status) => {
@@ -281,7 +291,6 @@
 
         // --- DATA ---
         async function fetchEntries() {
-            // Using Left Join syntax for stats
             const { data, error } = await supabaseClient.from('entries').select(`*, ranking_stats ( average_score, count )`);
             
             if (error) {
@@ -296,8 +305,7 @@
 
             if (!data || data.length === 0) {
                 console.warn("No entries found in database.");
-                // Inject dummy data for visualization purposes if DB is empty
-                entries = []; // Keep empty so user knows to run sync script
+                entries = [];
             } else {
                 entries = data.map(e => ({
                     ...e,
@@ -347,7 +355,7 @@
                 // Rank Badge Color logic
                 const badgeColor = index === 0 ? '#FFD700' : index === 1 ? '#C0C0C0' : index === 2 ? '#CD7F32' : 'rgba(255,255,255,0.1)';
                 
-                const themeName = entry.section === 'Section B' && entry.roll === '119' ? 'Sakura Dreams' : (entry.theme_name || 'Classified');
+                const themeName = entry.theme || 'Classified';
 
                 card.innerHTML = `
                     <div class="h-full bg-[#0a0a0a] border border-white/5 p-4 flex flex-col justify-between relative overflow-hidden">
@@ -449,9 +457,23 @@
             const { data: { session } } = await supabaseClient.auth.getSession();
             currentUser = session?.user;
             const ui = document.getElementById('auth-ui');
-            ui.innerHTML = currentUser ? 
-                `<span class="text-xs font-mono text-white/40 mr-2">${currentUser.email.split('@')[0]}</span><button onclick="supabaseClient.auth.signOut().then(()=>location.reload())" class="text-xs text-red-400 hover:text-red-300 font-mono">[ EXIT ]</button>` : 
-                `<button onclick="toggleAuthModal()" class="text-xs font-mono tracking-widest text-white/60 hover:text-white uppercase transition-colors">[ Login ]</button>`;
+            
+            if (currentUser) {
+                // Get Metadata
+                const meta = currentUser.user_metadata || {};
+                const name = meta.name || currentUser.email.split('@')[0]; // Fallback to email part if no name
+                const username = meta.username ? `<span class="opacity-50">@${meta.username}</span>` : '';
+
+                ui.innerHTML = `
+                    <div class="text-right mr-3">
+                        <div class="text-xs font-bold text-white uppercase tracking-wider">${name}</div>
+                        <div class="text-[10px] font-mono text-white/60 tracking-widest">${username}</div>
+                    </div>
+                    <button onclick="supabaseClient.auth.signOut().then(()=>location.reload())" class="text-xs text-red-400 hover:text-red-300 font-mono border border-red-500/30 px-2 py-1 hover:bg-red-500/10 transition-colors">[ EXIT ]</button>
+                `;
+            } else {
+                ui.innerHTML = `<button onclick="toggleAuthModal()" class="text-xs font-mono tracking-widest text-white/60 hover:text-white uppercase transition-colors border border-white/20 px-3 py-1 hover:bg-white hover:text-black">[ Login ]</button>`;
+            }
         }
 
         function toggleAuthModal() {
@@ -461,19 +483,32 @@
 
         document.getElementById('auth-form').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const fullName = document.getElementById('full_name').value;
+            const username = document.getElementById('username').value;
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const msg = document.getElementById('auth-msg');
+            
             msg.innerText = "Authenticating...";
             
-            // 1. Try to Login
+            // 1. Try to Login first
             let { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
             
             if (error) {
                 // 2. If Login fails, try to Sign Up (Auto-Registration)
                 console.log("Login failed, attempting signup:", error.message);
+                msg.innerText = "Creating Identity...";
                 
-                const { data: signUpData, error: signUpError } = await supabaseClient.auth.signUp({ email, password });
+                const { data: signUpData, error: signUpError } = await supabaseClient.auth.signUp({ 
+                    email, 
+                    password,
+                    options: {
+                        data: {
+                            name: fullName,
+                            username: username
+                        }
+                    }
+                });
                 
                 if (signUpError) {
                     msg.innerText = "Error: " + signUpError.message;
@@ -481,22 +516,21 @@
                     return;
                 }
                 
-                // If signup successful but session is null, it usually means "Confirm Email" is on in Supabase
                 if (signUpData.user && !signUpData.session) {
                     msg.innerText = "Confirmation email sent! Please check inbox.";
                     return;
                 }
                 
-                msg.innerText = "New ID Created. Logging in...";
+                msg.innerText = "New ID Created. Welcome.";
             } else {
-                 msg.innerText = "Success. Entering Nexus...";
+                 msg.innerText = "Identity Verified. Accessing Nexus...";
             }
             
             // Reload to update UI state
             setTimeout(() => {
                  toggleAuthModal(); 
                  window.location.reload();
-            }, 500);
+            }, 800);
         });
 
         function openVoteModal(id, section) {
@@ -505,7 +539,7 @@
             const entry = entries.find(e => e.id === id);
             
             document.getElementById('vote-name').innerText = entry.name;
-            document.getElementById('vote-theme').innerText = entry.theme_name || 'Unknown Protocol';
+            document.getElementById('vote-theme').innerText = entry.theme || 'Unknown Protocol';
             document.getElementById('vote-img').style.backgroundImage = `url('${entry.image_url}')`;
             
             const sectionEl = document.getElementById('vote-section');
